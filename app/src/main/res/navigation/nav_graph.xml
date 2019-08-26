@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/navigation"
+    app:startDestination="@id/meterFragment">
+
+    <fragment
+        android:id="@+id/meterFragment"
+        android:name="com.example.fmkmeter.MeterFragment"
+        android:label="@string/menu_nav_meter"
+        tools:layout="@layout/fragment_meter" >
+        <action
+            android:id="@+id/action_meterFragment_to_chartFragment"
+            app:destination="@id/chartFragment" />
+        <argument
+            android:name="isStartIzm"
+            app:argType="integer"
+            android:defaultValue="0" />
+    </fragment>
+    <fragment
+        android:id="@+id/chartFragment"
+        android:name="com.example.fmkmeter.ChartFragment"
+        android:label="@string/menu_nav_chart"
+        tools:layout="@layout/fragment_chart" >
+        <action
+            android:id="@+id/action_chartFragment_to_meterFragment"
+            app:destination="@+id/meterFragment"
+            app:popUpTo="@+id/meterFragment"
+            app:popUpToInclusive="true">
+            <argument
+                android:name="isStartIzm"
+                android:defaultValue="0" />
+        </action>
+    </fragment>
+</navigation>
