@@ -1,6 +1,8 @@
 package com.example.fmkmeter;
 
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
+import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.DialogFragment;
 import androidx.lifecycle.Lifecycle;
 import androidx.lifecycle.LifecycleObserver;
@@ -9,7 +11,11 @@ import androidx.lifecycle.Observer;
 import androidx.lifecycle.OnLifecycleEvent;
 import androidx.navigation.Navigation;
 
+import android.Manifest;
 import android.content.Context;
+import android.content.DialogInterface;
+import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 
@@ -17,10 +23,12 @@ import com.ftdi.j2xx.FT_Device;
 import com.github.mikephil.charting.charts.LineChart;
 import com.github.mikephil.charting.data.LineData;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class ChartPresenter<V extends ChartContractor.View> implements LifecycleObserver, 
-     ChartContractor.Presenter<V>, LineChartClass.LoadChartListener, CalculateAsyncTask.CalculateAsyncTaskListener {
+     ChartContractor.Presenter<V>, LineChartClass.LoadChartListener, CalculateAsyncTask.CalculateAsyncTaskListener,
+        SaveFileDialogFragment.SaveFileDialogListener {
     public static final String TAG = "ChartPresenter";
     private Bundle stateBundle;
     private V view;
@@ -39,6 +47,8 @@ public class ChartPresenter<V extends ChartContractor.View> implements Lifecycle
     private int mMinMax=0;
     private int progressDelta=50;
     private String mMessage="";
+    private String saveUchastok="";
+    private int saveNIzm=1;
     private boolean isFirstTime=true;
     Repository repository;
     LineChartClass lineChart = null;
@@ -344,5 +354,52 @@ public class ChartPresenter<V extends ChartContractor.View> implements Lifecycle
             mMessage = context.getString(R.string.msg_data_result_null);
             view.showMessageForm(true, mMessage);
         }
+    }
+
+
+    private boolean canAccessContacts() {
+        return (hasPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE));
+    }
+
+    private boolean hasPermission(String perm) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            return (PackageManager.PERMISSION_GRANTED == context.checkSelfPermission(perm));
+        } else {
+            return false;
+        }
+    }
+
+    @Override
+    public void saveFileOnClick() {
+        if (!canAccessContacts()) {
+            Log.d("init", "runTimePermissions");
+            view.runTimePermissions();
+            //initLocation();
+        }
+        else
+        {
+            view.showDialog();
+        }
+    }
+
+    @Override
+    public DialogFragment getSaveDialog() {
+        return SaveFileDialogFragment.newInstance(this, saveUchastok, String.valueOf(saveNIzm));
+        //return null;
+    }
+
+    @Override
+    public void onSaveDialogPositiveClick(String uchastok, String put, String nOpora, String nIzm) {
+        String fileName=uchastok+"_"+put+"_"+nOpora+"_"+nIzm+".xml";
+        List<Signal> signalData = new ArrayList<Signal>();
+        signalData.add(new Signal(1, 123));
+        signalData.add(new Signal(2, 456));
+        signalData.add(new Signal(3, 79));
+        if(repository.getResultData()!=null && repository.getResultData().size()>0) {
+            view.showToastMessage(FileUtils.saveFile(repository.getResultData(), context, fileName));
+            saveUchastok = uchastok;
+            saveNIzm = Integer.valueOf(nIzm) + 1;
+        }
+        else view.showToastMessage(context.getString(R.string.msg_data_not_found));
     }
 }

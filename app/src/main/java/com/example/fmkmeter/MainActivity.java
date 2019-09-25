@@ -1,13 +1,8 @@
 package com.example.fmkmeter;
 
 import android.os.Bundle;
-import androidx.annotation.NonNull;
-import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager;
-import android.util.Log;
 import androidx.core.view.GravityCompat;
 import androidx.appcompat.app.ActionBarDrawerToggle;
-import android.view.MenuItem;
 import com.google.android.material.navigation.NavigationView;
 import androidx.drawerlayout.widget.DrawerLayout;
 
@@ -23,6 +18,7 @@ public class MainActivity extends AppCompatActivity {
     private int menuItemSelected=0;
     DrawerLayout drawer;
     public static final String TAG = "MainActivity";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -51,8 +47,6 @@ public class MainActivity extends AppCompatActivity {
         if(savedInstanceState != null){
             menuItemSelected = savedInstanceState.getInt(SAVE_STATE_MENU,0);
         }
-        /*else
-            selectDrawerItem(navigationView.getMenu().getItem(menuItemSelected));*/
     }
 
     @Override
@@ -64,31 +58,6 @@ public class MainActivity extends AppCompatActivity {
             super.onBackPressed();
         }
     }
-
-   /* public void selectDrawerItem(MenuItem item) {
-        Fragment fragment = null;
-        int id = item.getItemId();
-        switch(id)
-        {
-            case R.id.nav_meter:
-                fragment = MeterFragment.newInstance();
-                menuItemSelected=0;
-                break;
-            case R.id.nav_chart:
-                fragment = ChartFragment.newInstance();
-                menuItemSelected=1;
-                break;
-        }
-
-        FragmentManager fragmentManager = getSupportFragmentManager();
-        fragmentManager.beginTransaction().replace(R.id.container, fragment).commit();
-        item.setChecked(true);
-        setTitle(item.getTitle());
-
-        DrawerLayout drawer = findViewById(R.id.drawer_layout);
-        drawer.closeDrawer(GravityCompat.START);
-        Log.d(TAG, "onNavigationItemSelected");
-    }*/
 
     @Override
     protected void onSaveInstanceState(Bundle outState) {

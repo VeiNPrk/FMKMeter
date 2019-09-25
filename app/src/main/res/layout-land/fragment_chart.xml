@@ -140,6 +140,10 @@
             android:id="@+id/linearLayout2"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginLeft="8dp"
+            android:layout_marginEnd="8dp"
+            android:layout_marginRight="8dp"
             android:gravity="right"
             android:orientation="horizontal"
             app:layout_constraintBottom_toBottomOf="parent"
@@ -151,8 +155,8 @@
                 style="@style/Widget.MaterialComponents.Button.OutlinedButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginLeft="@dimen/margin_8"
                 android:layout_marginRight="@dimen/margin_8"
+                android:layout_weight="1"
                 android:enabled="false"
                 android:text="@string/btn_chart_prew"
                 android:textSize="@dimen/text_size_20" />
@@ -162,6 +166,7 @@
                 style="@style/Widget.MaterialComponents.Button.OutlinedButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_weight="1"
                 android:enabled="false"
                 android:text="@string/btn_chart_next"
                 android:textSize="@dimen/text_size_20"
@@ -174,9 +179,20 @@
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="@dimen/margin_8"
                 android:layout_marginRight="@dimen/margin_8"
+                android:layout_weight="1"
                 android:text="@string/btn_chart_load"
+
                 android:textSize="@dimen/text_size_20"
                 android:typeface="normal" />
+
+            <Button
+                android:id="@+id/btnSaveXml"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/btn_save_xml"
+                android:textSize="@dimen/text_size_20" />
 
         </LinearLayout>
 

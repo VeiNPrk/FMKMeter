@@ -4,8 +4,6 @@
     <string name="start_flow_btn">Начать</string>
     <string name="finish_btn">Завершить</string>
     <string name="info_btn">Инфо</string>
-    <string name="dlg_info_title">Информация</string>
-    <string name="dlg_info_yes">Ok</string>
     <string name="set_settings_btn">Установить</string>
     <string name="btn_get_result">Результат</string>
 
@@ -22,6 +20,7 @@
     <string name="btn_chart_next">Следующий</string>
     <string name="btn_chart_prew">Предыдущий</string>
     <string name="btn_chart_load">К измерениям</string>
+    <string name="btn_save_xml">Сохранить</string>
     <string name="menu_home">Home</string>
     <string name="menu_gallery">Gallery</string>
     <string name="menu_slideshow">Slideshow</string>
@@ -42,9 +41,32 @@
     <string name="tv_tittle_minmax">MinMax:</string>
     <string name="tv_tittle_size">Всего:</string>
     <string name="tv_tittle_index">Шаг:</string>
+
     <string name="msg_data_load_complete">Данные измерения подгружены, нажмите загрузить для отображения</string>
     <string name="msg_data_result_null">Нет данных удовлетворяющих условию</string>
     <string name="msg_data_not_found">Данные измерений не найдены</string>
     <string name="msg_data_not_complete_load">Данные ещё не подгрузились, подождите</string>
     <string name="msg_device_not_open">Устройство не подключено!</string>
+
+    <string name="msg_file_save_success">Файл успешно сохранён:</string>
+    <string name="msg_ext_stor_not">Внешнее пространство недоступно или у Вас нет разрешения на запись</string>
+    <string name="msg_permissions_denied">Необходимые разрешения отсутствуют!</string>
+
+    <string name="dlg_info_title">Информация</string>
+    <string name="dlg_info_yes">Ok</string>
+    <string name="dlg_permission_ok">Ok</string>
+    <string name="dlg_permission_cancel">Cancel</string>
+    <string name="dlg_permission_type">Запись файлов</string>
+    <string name="dlg_permission_message">Для сохранения Вы должны разрешить следующее:</string>
+    <string name="dlg_save_title">Параметры сохранения</string>
+    <string name="dlg_save_empty_fields">Поля \"Участок\" и \"№ измерения\" должны быть заполнены!"</string>
+    <string name="dlg_save_tv_uchastok">Участок</string>
+    <string name="dlg_save_tv_put">Путь</string>
+    <string name="dlg_save_tv_nopor">№ опоры</string>
+    <string name="dlg_save_tv_nizm">№ измерения</string>
+    <string name="dlg_save_tv_hint_uchastok">Введите участок</string>
+    <string name="dlg_save_tv_hint_put">Введите путь</string>
+    <string name="dlg_save_tv_hint_nopor">Введите № опоры</string>
+    <string name="dlg_save_tv_hint_nizm">Введите № измерения</string>
+
 </resources>

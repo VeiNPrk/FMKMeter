@@ -2,6 +2,7 @@ package com.example.fmkmeter;
 
 import android.content.Context;
 
+import androidx.fragment.app.DialogFragment;
 import androidx.lifecycle.Lifecycle;
 import androidx.lifecycle.LifecycleOwner;
 
@@ -39,6 +40,10 @@ public interface ChartContractor {
           void setSwitch(boolean isChecked);
 
          LineChart getChart();
+
+         void showDialog();
+
+         void runTimePermissions();
      } 
 
      interface Presenter<V extends ChartContractor.View>{
@@ -74,5 +79,10 @@ public interface ChartContractor {
           void prewSetOnClick();
 
           void loadDataOnClick();
+
+          void saveFileOnClick();
+
+         DialogFragment getSaveDialog();
+
      }
 }

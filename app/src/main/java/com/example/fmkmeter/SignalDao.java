@@ -20,11 +20,17 @@ public interface SignalDao {
     @Query("SELECT * from signal ORDER BY time ASC")
     LiveData<List<Signal>> getAllSignalls();
 
+    /*@Query("SELECT * from result ORDER BY timeCreate ASC")
+    LiveData<List<Result>> getAllResults();*/
+
     @Query("SELECT * FROM signal WHERE id=:id")
     LiveData<List<Signal>> findRepositoriesForUser(final int id);
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     void insert(List<Signal> signals);
+
+    /*@Insert(onConflict = OnConflictStrategy.IGNORE)
+    void insertResult(Result result);*/
 
     @Query("DELETE FROM signal")
     void deleteAll();

@@ -117,4 +117,29 @@ public class Repository {
         }
     }
 
+    void saveResult(Result result) {
+        new InsertResultAsyncTask(mSignalDao).execute(result);
+    }
+
+    /*public interface InsertAsyncTaskListener {
+        void onPostInsertExecute();
+    }*/
+
+    public static class InsertResultAsyncTask extends AsyncTask<Result, Void, Void> {
+
+        private SignalDao mAsyncTaskDao;
+        //private InsertAsyncTaskListener mListener;
+        InsertResultAsyncTask(SignalDao dao) {
+            mAsyncTaskDao = dao;
+            //mListener = listener;
+        }
+
+        @Override
+        protected Void doInBackground(Result... voids) {
+           // mAsyncTaskDao.insertResult(voids[0]);
+            Log.d("Repository","InsertResultAsyncTask");
+            return null;
+        }
+    }
+
 }

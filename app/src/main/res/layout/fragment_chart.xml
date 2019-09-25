@@ -101,9 +101,9 @@
             android:id="@+id/linearLayout2"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="8dp"
+            android:gravity="center"
             android:orientation="horizontal"
-            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintBottom_toTopOf="@+id/linearLayout6"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent">
 
@@ -134,6 +134,7 @@
                 android:text="@string/btn_chart_next"
                 android:textSize="@dimen/text_size_20"
                 android:typeface="normal" />
+
             <Button
                 android:id="@+id/btnToIzm"
                 style="@style/Widget.MaterialComponents.Button.OutlinedButton"
@@ -146,6 +147,27 @@
                 android:textSize="@dimen/text_size_20"
                 android:typeface="normal" />
 
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/linearLayout6"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent">
+
+            <Button
+                android:id="@+id/btnSaveXml"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="@dimen/margin_8"
+                android:layout_marginRight="@dimen/margin_8"
+                android:layout_weight="1"
+                android:text="@string/btn_save_xml"
+                android:textSize="@dimen/text_size_20" />
         </LinearLayout>
 
         <LinearLayout
