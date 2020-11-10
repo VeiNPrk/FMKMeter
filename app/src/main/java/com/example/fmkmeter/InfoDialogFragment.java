@@ -18,6 +18,7 @@ public class InfoDialogFragment extends DialogFragment {
     public static final String TAG = "DownloadUrlDialog";
     //DownloadDialogListener mListener;
     //TextView numberDeviceValue;
+    TextView appVersion;
     TextView deviceName;
     TextView deviceSerialNo;
     TextView deviceDescription;
@@ -46,7 +47,7 @@ public class InfoDialogFragment extends DialogFragment {
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         LayoutInflater inflater = getActivity().getLayoutInflater();
         View view = inflater.inflate(R.layout.maket_info_dialog, null);
-        //numberDeviceValue = view.findViewById(R.id.numDev);
+        appVersion = view.findViewById(R.id.app_version);
         deviceName = view.findViewById(R.id.device_name);
         //error_Information = view.findViewById(R.id.ErrorInformation);
         deviceSerialNo = view.findViewById(R.id.device_information_serialno);
@@ -54,6 +55,7 @@ public class InfoDialogFragment extends DialogFragment {
         deviceID = view.findViewById(R.id.device_informatation_deviceid);
         deviceLocation = view.findViewById(R.id.device_informatation_devicelocation);
         library = view.findViewById(R.id.device_informatation_library);
+        appVersion.setText("Версия приложения : "+BuildConfig.VERSION_NAME);
         if (device != null) {
             switch (device.type) {
                 case D2xxManager.FT_DEVICE_232B:
