@@ -163,7 +163,7 @@ public class MainActivity_old extends AppCompatActivity implements ReaderAsyncTa
     }
 
     private void startCalcTask(){
-        CalculateAsyncTask calcTask = new CalculateAsyncTask(this);
+        CalculateAsyncTask calcTask = new CalculateAsyncTask(this, 2000);
         //calcTask.setListener(this);
         calcTask.execute();
     }
@@ -826,7 +826,7 @@ public class MainActivity_old extends AppCompatActivity implements ReaderAsyncTa
     }*/
 
     @Override
-    public void onPostCalculateConcluded(List<Signal> outData, int minMaxValue, int min, int max, int average) {
+    public void onPostCalculateConcluded(List<Signal> outData, List<Signal> outIntegrateData, float minMaxValue, float minMaxIntegrateValue, float min, float max, float average) {
 
     }
 /*

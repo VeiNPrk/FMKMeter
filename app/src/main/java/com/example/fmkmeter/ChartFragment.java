@@ -2,6 +2,7 @@ package com.example.fmkmeter;
 
 import android.Manifest;
 import android.content.DialogInterface;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
@@ -16,6 +17,7 @@ import androidx.databinding.ViewDataBinding;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.navigation.Navigation;
+import androidx.preference.PreferenceManager;
 
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -34,6 +36,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static android.content.Context.MODE_PRIVATE;
+
 
 /**
  * A simple {@link Fragment} subclass.
@@ -44,20 +48,29 @@ import java.util.Map;
  * create an instance of this fragment.
  */
 public class ChartFragment<V extends ChartContractor.View, P extends ChartContractor.Presenter<V>> extends Fragment
-    implements ChartContractor.View {
+        implements ChartContractor.View {
 
-    public static final String TAG="ChartFragment";
+    public static final String TAG = "ChartFragment";
+    private static final String KEY_SAVE_DELTA="key_save_state_delta";
     private static final int MIN = 500;
     private static final int MAX = 10000;
     private static final int MINDelta = -16000;
     private static final int MAXDelta = 16000;
     private static final int STEP = 100;
     private static final int STEPDelta = 200;
-    private static final int startDeltaProgress = 50;
+    private int cntNLast = 2000;
+    private static int startDeltaProgress = 50;
+    private int deltaProgress = 50;
     protected ChartContractor.Presenter presenter;
     private FragmentChartBinding binding;
     private final static int REQUEST_CODE_ASK_MULTIPLE_PERMISSIONS = 124;
     private static boolean isNewInstance = false;
+    SharedPreferences prefs = null;
+    SharedPreferences.Editor editPrefs=null;
+    private static final String TOKEN_PREF="TOKEN_PREF";
+    private static final String KEY_DELTA="start_delta_key";
+    private static final String KEY_CNT_N_LAST="cnt_n_last";
+
 
     ChartFragmentDirections.ActionChartFragmentToMeterFragment action = ChartFragmentDirections.actionChartFragmentToMeterFragment();
 
@@ -97,21 +110,27 @@ public class ChartFragment<V extends ChartContractor.View, P extends ChartContra
         final View view = ((ViewDataBinding) binding).getRoot();
         initListeners();
         ChartViewModel viewModel =
-        ViewModelProviders.of(getActivity()).get(ChartViewModel.class);
+                ViewModelProviders.of(getActivity()).get(ChartViewModel.class);
         if (viewModel.getPresenter() == null) {
             viewModel.setPresenter(new ChartPresenter());
+        }
+        prefs = getContext().getSharedPreferences(TOKEN_PREF, MODE_PRIVATE);
+        editPrefs = prefs.edit();
+        startDeltaProgress = prefs.getInt(KEY_DELTA, startDeltaProgress);
+        if (savedInstanceState != null) {
+            deltaProgress = savedInstanceState.getInt(KEY_SAVE_DELTA, startDeltaProgress);
         }
         presenter = viewModel.getPresenter();
         presenter.attachLifecycle(getLifecycle());
         presenter.attachView((V) this);
         presenter.setRepository(viewModel.getRepository(), this, isNewInstance);
-        if(isNewInstance)
-            isNewInstance=false;
+        if (isNewInstance)
+            isNewInstance = false;
         //spinnerListDevices = presenter.getListDevices();
         setHasOptionsMenu(false);
-        binding.tvStep.setText(""+MIN);
+        binding.tvStep.setText("" + MIN);
         presenter.setSeekBarStep(0, MIN);
-        presenter.setSeekBarDelta(startDeltaProgress,MINDelta);
+        presenter.setSeekBarDelta(deltaProgress, MINDelta);
         action.setIsStartIzm(0);
         //presenter.loadDataOnClick();
         OnBackPressedCallback callback = new OnBackPressedCallback(true) {
@@ -123,6 +142,14 @@ public class ChartFragment<V extends ChartContractor.View, P extends ChartContra
             }
         };
         requireActivity().getOnBackPressedDispatcher().addCallback(this, callback);
+        /*SharedPreferences sharedPreferences =
+                PreferenceManager.getDefaultSharedPreferences(getContext());
+        try {
+            cntNLast = Integer.parseInt(sharedPreferences.getString(KEY_CNT_N_LAST, "2000"));
+        } catch (NumberFormatException nfe) {
+            cntNLast = 2000;
+        }
+        showToastMessage("" + cntNLast);*/
         return view;
     }
 
@@ -132,9 +159,18 @@ public class ChartFragment<V extends ChartContractor.View, P extends ChartContra
             mListener.onFragmentInteraction(uri);
         }
     }
+
+    @Override
+    public void onSaveInstanceState(@NonNull Bundle outState) {
+        Log.d(TAG,"onSaveInstanceState");
+        outState.putInt(KEY_SAVE_DELTA, deltaProgress);
+        super.onSaveInstanceState(outState);
+    }
+
     @Override
     public void onStart() {
         Log.d(TAG, "onStart");
+        presenter.attachView((V) this);
         super.onStart();
     }
 
@@ -153,7 +189,7 @@ public class ChartFragment<V extends ChartContractor.View, P extends ChartContra
         super.onDestroy();
     }
 
-    private void initListeners(){
+    private void initListeners() {
         //binding.tvRead.setMovementMethod(new ScrollingMovementMethod());
         binding.btnNextSet.setOnClickListener(new View.OnClickListener() {
             public void onClick(final View v) {
@@ -193,11 +229,11 @@ public class ChartFragment<V extends ChartContractor.View, P extends ChartContra
 
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                Log.d(TAG,"sbStepChart onProgressChanged");
+                Log.d(TAG, "sbStepChart onProgressChanged");
                 double value = Math.round((progress * (MAX - MIN)) / 100);
                 int displayValue = (((int) value + MIN) / STEP) * STEP;
-                binding.tvStep.setText(""+displayValue);
-                Log.d(TAG,"tvStep text "+displayValue);
+                binding.tvStep.setText("" + displayValue);
+                Log.d(TAG, "tvStep text " + displayValue);
                 presenter.setSeekBarStep(progress, displayValue);
             }
         });
@@ -205,7 +241,9 @@ public class ChartFragment<V extends ChartContractor.View, P extends ChartContra
         binding.sbDeltaChart.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
-                Log.d(TAG,"sbDeltaChart onStopTrackingTouch");
+                Log.d(TAG, "sbDeltaChart onStopTrackingTouch");
+                editPrefs.putInt(KEY_DELTA, deltaProgress);
+                editPrefs.apply();
                 presenter.loadDataOnClick();
             }
 
@@ -215,11 +253,13 @@ public class ChartFragment<V extends ChartContractor.View, P extends ChartContra
 
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                Log.d(TAG,"sbDeltaChart onProgressChanged");
+                Log.d(TAG, "sbDeltaChart onProgressChanged");
                 double value = Math.round((progress * (MAXDelta - MINDelta)) / 100);
                 int displayValue = (((int) value + MINDelta) / STEPDelta) * STEPDelta;
-                binding.tvStep.setText(""+displayValue);
-                Log.d(TAG,"tvStep text "+displayValue);
+                binding.tvStep.setText("" + displayValue);
+                Log.d(TAG, "tvStep text " + displayValue);
+                deltaProgress=progress;
+
                 presenter.setSeekBarDelta(progress, displayValue);
             }
 
@@ -227,18 +267,17 @@ public class ChartFragment<V extends ChartContractor.View, P extends ChartContra
         binding.switchResult.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                Log.d(TAG,"switchResult onCheckedChanged");
+                Log.d(TAG, "switchResult onCheckedChanged");
                 presenter.setSwitchChartValue(isChecked);
                 binding.sbDeltaChart.setProgress(startDeltaProgress);
                 binding.sbStepChart.setProgress(0);
-                if(isChecked) {
+                if (isChecked) {
                     binding.sbDeltaChart.setVisibility(View.VISIBLE);
                     binding.sbStepChart.setVisibility(View.GONE);
                     binding.tvSbTittle.setText(getString(R.string.tv_tittle_sb_delta));
                     binding.sbDeltaChart.setProgress(10);
                     binding.sbDeltaChart.setProgress(startDeltaProgress);
-                }
-                else{
+                } else {
                     binding.sbDeltaChart.setVisibility(View.GONE);
                     binding.sbStepChart.setVisibility(View.VISIBLE);
                     binding.tvSbTittle.setText(getString(R.string.tv_tittle_sb_step));
@@ -251,7 +290,7 @@ public class ChartFragment<V extends ChartContractor.View, P extends ChartContra
         binding.switchResult.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Log.d(TAG,"switchResult onClick");
+                Log.d(TAG, "switchResult onClick");
                 presenter.loadDataOnClick();
             }
         });
@@ -259,11 +298,10 @@ public class ChartFragment<V extends ChartContractor.View, P extends ChartContra
 
     @Override
     public void showProgressBar(boolean tf) {
-        if(tf){
+        if (tf) {
             binding.chart.setVisibility(View.GONE);
             binding.progressContainer.setVisibility(View.VISIBLE);
-        }
-        else{
+        } else {
             binding.chart.setVisibility(View.VISIBLE);
             binding.progressContainer.setVisibility(View.GONE);
         }
@@ -281,10 +319,9 @@ public class ChartFragment<V extends ChartContractor.View, P extends ChartContra
 
     @Override
     public void showChartForm(boolean tf) {
-        if(tf){
+        if (tf) {
             binding.chart.setVisibility(View.VISIBLE);
-        }
-        else{
+        } else {
             binding.chart.setVisibility(View.GONE);
         }
     }
@@ -298,17 +335,18 @@ public class ChartFragment<V extends ChartContractor.View, P extends ChartContra
 
     @Override
     public void setSizeData(int countData) {
-        binding.tvSizeData.setText(""+countData);
+        binding.tvSizeData.setText("" + countData);
     }
 
     @Override
     public void setTVIndexChart(int indexChart, int lastIndexChart) {
-        binding.tvIndexChart.setText(++indexChart+" из "+ ++lastIndexChart);
+        binding.tvIndexChart.setText(++indexChart + " из " + ++lastIndexChart);
     }
 
     @Override
-    public void setMinMax(int minMax) {
-        binding.tvMinMax.setText(""+minMax);
+    public void setMinMax(float minMax, float minMaxIntegrate) {
+        binding.tvMinMax.setText("" + minMax);
+        binding.tvMinMaxIntegrate.setText("" + minMaxIntegrate);
     }
 
     @Override
@@ -319,11 +357,10 @@ public class ChartFragment<V extends ChartContractor.View, P extends ChartContra
 
     @Override
     public void showMessageForm(boolean tf, String msg) {
-        if(tf){
+        if (tf) {
             binding.tvMessageForm.setVisibility(View.VISIBLE);
             binding.tvMessageForm.setText(msg);
-        }
-        else{
+        } else {
             binding.tvMessageForm.setVisibility(View.GONE);
         }
     }
@@ -336,8 +373,8 @@ public class ChartFragment<V extends ChartContractor.View, P extends ChartContra
 
     @Override
     public void setSeekBarStep(int progress) {
-        Log.d(TAG,"setSeekBarStep "+progress);
-        binding.sbStepChart.setProgress(progress*2);
+        Log.d(TAG, "setSeekBarStep " + progress);
+        binding.sbStepChart.setProgress(progress * 2);
         binding.sbStepChart.setProgress(progress);
         //binding.sbStepChart.
     }
@@ -359,13 +396,13 @@ public class ChartFragment<V extends ChartContractor.View, P extends ChartContra
 
     @Override
     public void setSeekBarDelta(int progress) {
-        Log.d(TAG,"setSeekBarDelta "+progress);
-        binding.sbDeltaChart.setProgress(progress*2);
+        Log.d(TAG, "setSeekBarDelta " + progress);
+        binding.sbDeltaChart.setProgress(progress * 2);
         binding.sbDeltaChart.setProgress(progress);
     }
 
     @Override
-    public void runTimePermissions(){
+    public void runTimePermissions() {
         List<String> permissionsNeeded = new ArrayList<String>();
         final List<String> permissionsList = new ArrayList<String>();
         if (!addPermission(permissionsList, Manifest.permission.WRITE_EXTERNAL_STORAGE))

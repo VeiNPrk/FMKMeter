@@ -2,15 +2,21 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <item
-        android:id="@+id/menu_info"
+        android:id="@+id/nav_fragment_settings"
         android:icon="@drawable/ic_menu_send"
         android:orderInCategory="100"
-        android:title="@string/menu_info"
+        android:title="@string/menu_settings"
         app:showAsAction="never" />
     <item
         android:id="@+id/menu_refresh"
         android:icon="@drawable/ic_menu_share"
         android:orderInCategory="100"
         android:title="@string/menu_refresh"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/menu_info"
+        android:icon="@drawable/ic_menu_send"
+        android:orderInCategory="100"
+        android:title="@string/menu_info"
         app:showAsAction="never" />
 </menu>

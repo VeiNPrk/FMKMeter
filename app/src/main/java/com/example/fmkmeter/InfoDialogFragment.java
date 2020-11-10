@@ -3,8 +3,10 @@ package com.example.fmkmeter;
 import android.app.Dialog;
 import android.content.DialogInterface;
 import android.os.Bundle;
+
 import androidx.fragment.app.DialogFragment;
 import androidx.appcompat.app.AlertDialog;
+
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -12,7 +14,7 @@ import android.widget.TextView;
 
 import com.ftdi.j2xx.D2xxManager;
 
-public class InfoDialogFragment  extends DialogFragment {
+public class InfoDialogFragment extends DialogFragment {
     public static final String TAG = "DownloadUrlDialog";
     //DownloadDialogListener mListener;
     //TextView numberDeviceValue;
@@ -23,6 +25,7 @@ public class InfoDialogFragment  extends DialogFragment {
     TextView deviceLocation;
     TextView library;
     static D2xxManager.FtDeviceInfoListNode device;
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -36,7 +39,7 @@ public class InfoDialogFragment  extends DialogFragment {
 
     public static InfoDialogFragment newInstance(D2xxManager.FtDeviceInfoListNode _device) {
         InfoDialogFragment infoDialog = new InfoDialogFragment();
-        device=_device;
+        device = _device;
         return infoDialog;
     }
 
@@ -51,7 +54,7 @@ public class InfoDialogFragment  extends DialogFragment {
         deviceID = view.findViewById(R.id.device_informatation_deviceid);
         deviceLocation = view.findViewById(R.id.device_informatation_devicelocation);
         library = view.findViewById(R.id.device_informatation_library);
-        if(device!=null){
+        if (device != null) {
             switch (device.type) {
                 case D2xxManager.FT_DEVICE_232B:
                     deviceName.setText("Device Name : FT232B");

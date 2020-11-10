@@ -33,8 +33,8 @@ public class D2DeviceUtils {
         return ftDev;
     }
 
-    public D2xxManager.FtDeviceInfoListNode getDeviceNode(){
-        if(deviceList!=null)
+    public D2xxManager.FtDeviceInfoListNode getDeviceNode() {
+        if (deviceList != null)
             return deviceList[openIndex];
         else
             return null;
@@ -100,22 +100,22 @@ public class D2DeviceUtils {
 
     public String connectDevice(int deviceIndex) throws InterruptedException {
         int devCount = 0;
-        String str="";
+        String str = "";
         openIndex = deviceIndex;
         try {
             devCount = ftdid2xx.createDeviceInfoList(context);
             //Log.i("FtdiModeControl", "Device number = " + Integer.toString(devCount));
             if (devCount > 0) {
                 //binding.tvDevCount.setVisibility(View.GONE);
-                str=connectFunction();
+                str = connectFunction();
             } else {
                 //binding.tvDevCount.setVisibility(View.VISIBLE);
                 //binding.tvDevCount.setText("Number of devices: 0");
-                str="Number of devices: 0";
+                str = "Number of devices: 0";
             }
         } catch (Exception ex) {
-            Log.e("D2DeviceUtils","Exception connectDevice "+ex);
-            str=ex.toString();
+            Log.e("D2DeviceUtils", "Exception connectDevice " + ex);
+            str = ex.toString();
             //binding.tvRead.setText(ex.toString());
         }
         return str;
@@ -123,17 +123,17 @@ public class D2DeviceUtils {
 
     public String connectFunction() {
         int tmpProtNumber = openIndex + 1;
-        String str="";
+        String str = "";
         //if (currentIndex != openIndex) {
-            if (null == ftDev) {
-                ftDev = ftdid2xx.openByIndex(context, openIndex);
-            } else {
-                synchronized (ftDev) {
-                    if(!ftDev.isOpen())
-                        ftDev = ftdid2xx.openByIndex(context, openIndex);
-                }
+        if (null == ftDev) {
+            ftDev = ftdid2xx.openByIndex(context, openIndex);
+        } else {
+            synchronized (ftDev) {
+                if (!ftDev.isOpen())
+                    ftDev = ftdid2xx.openByIndex(context, openIndex);
             }
-            //uart_configured = false;
+        }
+        //uart_configured = false;
         /*} else {
             str="Device port " + tmpProtNumber + " is already opened";
             //Toast.makeText(context, "Device port " + tmpProtNumber + " is already opened", Toast.LENGTH_LONG).show();
@@ -141,24 +141,24 @@ public class D2DeviceUtils {
         }*/
 
         if (ftDev == null) {
-            str="Open device port(" + tmpProtNumber + ") NG, ftDev == null";
+            str = "Open device port(" + tmpProtNumber + ") NG, ftDev == null";
             //Toast.makeText(context, "open device port(" + tmpProtNumber + ") NG, ftDev == null", Toast.LENGTH_LONG).show();
             return str;
         }
 
         if (true == ftDev.isOpen()) {
             currentIndex = openIndex;
-            str="Open device port(" + tmpProtNumber + ") OK";
+            str = "Open device port(" + tmpProtNumber + ") OK";
             //Toast.makeText(context, "open device port(" + tmpProtNumber + ") OK", Toast.LENGTH_SHORT).show();
         } else {
-            str="Open device port(" + tmpProtNumber + ") NG";
-           // Toast.makeText(context, "open device port(" + tmpProtNumber + ") NG", Toast.LENGTH_LONG).show();
+            str = "Open device port(" + tmpProtNumber + ") NG";
+            // Toast.makeText(context, "open device port(" + tmpProtNumber + ") NG", Toast.LENGTH_LONG).show();
         }
         return str;
     }
 
-    public boolean isOpened(){
-        if(ftDev == null)
+    public boolean isOpened() {
+        if (ftDev == null)
             return false;
         else
             return ftDev.isOpen();

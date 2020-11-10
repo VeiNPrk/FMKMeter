@@ -10,26 +10,29 @@ import java.util.List;
 
 public class ReaderAsyncTask extends AsyncTask<Void, Void, Integer> {
 
-    public static final String TAG="ReaderAsyncTask";
+    public static final String TAG = "ReaderAsyncTask";
     FT_Device ftDev = null;
     int iavailable = 0;
-    boolean bReadThreadGoing=true;
+    boolean bReadThreadGoing = true;
     boolean isSingle = false;
     boolean isSinglePost = false;
     byte[] readData;
     List<Integer> outData;
+
     public interface ReaderAsyncTaskListener {
         void onProgressConclude();
+
         void onPostExecuteConcluded(boolean isSingle);
+
         void onCanceled();
     }
 
     private ReaderAsyncTaskListener mListener;
 
-    public ReaderAsyncTask(FT_Device dev, boolean single){
+    public ReaderAsyncTask(FT_Device dev, boolean single) {
         ftDev = dev;
-        isSingle=single;
-        isSinglePost=isSingle;
+        isSingle = single;
+        isSinglePost = isSingle;
         readData = new byte[MainActivity_old.readLength];
         //Repository.outData.clear();
         outData = new ArrayList<Integer>();
@@ -44,17 +47,15 @@ public class ReaderAsyncTask extends AsyncTask<Void, Void, Integer> {
         //int singleK=0;
         outData.clear();
         try {
-            while(true == bReadThreadGoing && !isCancelled())
-            {
-                Log.d(TAG, "Cancel="+isCancelled());
+            while (true == bReadThreadGoing && !isCancelled()) {
+                Log.d(TAG, "Cancel=" + isCancelled());
                 Thread.sleep(MainActivity_old.DELAY_READ_THREAD);
-                synchronized(ftDev)
-                {
+                synchronized (ftDev) {
                     iavailable = ftDev.getQueueStatus();
-                    Log.d("iavailable", "iavailable="+iavailable);
+                    Log.d("iavailable", "iavailable=" + iavailable);
 
                     if (iavailable > 0) {
-                        if(iavailable > MainActivity_old.readLength){
+                        if (iavailable > MainActivity_old.readLength) {
                             iavailable = MainActivity_old.readLength;
                         }
 
@@ -63,15 +64,16 @@ public class ReaderAsyncTask extends AsyncTask<Void, Void, Integer> {
                             int bt = readData[i] * 256 + readData[i + 1];
                             Repository.outData.add(bt);
                         }*/
-                        for (int i = 0; i < iavailable; i++){
-                            /*Repository.*/outData.add((int) readData[i]);
+                        for (int i = 0; i < iavailable; i++) {
+                            /*Repository.*/
+                            outData.add((int) readData[i]);
                             Repository.getAllData().postValue(/*Repository.*/outData);
                         }
                     }
                     //singleK++;
-                    if(isSingle /*&& singleK>10*/){
-                        isSingle=false;
-                        bReadThreadGoing=false;
+                    if (isSingle /*&& singleK>10*/) {
+                        isSingle = false;
+                        bReadThreadGoing = false;
                     }
                 }
                 publishProgress();
@@ -94,7 +96,7 @@ public class ReaderAsyncTask extends AsyncTask<Void, Void, Integer> {
     @Override
     protected void onPostExecute(Integer aVoid) {
         super.onPostExecute(aVoid);
-        if (mListener != null){
+        if (mListener != null) {
             mListener.onProgressConclude();
             mListener.onPostExecuteConcluded(isSinglePost);
         }
@@ -103,7 +105,7 @@ public class ReaderAsyncTask extends AsyncTask<Void, Void, Integer> {
     @Override
     protected void onCancelled(Integer aVoid) {
         super.onCancelled(aVoid);
-        bReadThreadGoing=false;
+        bReadThreadGoing = false;
         Log.d(TAG, "Cancel");
         if (mListener != null) {
             mListener.onProgressConclude();

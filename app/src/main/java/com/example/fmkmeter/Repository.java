@@ -17,6 +17,7 @@ public class Repository {
     private static MutableLiveData<List<Signal>> endData = new MutableLiveData<List<Signal>>();
     private static LiveData<List<Signal>> endLiveData;
     private List<Signal> resultData = null;
+    private List<Signal> resultIntegrateData = null;
     private SignalDao mSignalDao;
 
     Repository(Application application) {
@@ -28,9 +29,9 @@ public class Repository {
         //mAllWords = mWordDao.getAlphabetizedWords();
     }
 
-    public void initAllLiveData(){
+    public void initAllLiveData() {
         endLiveData = mSignalDao.getAllSignalls();
-        Log.d("Repository","initAllLiveData");
+        Log.d("Repository", "initAllLiveData");
         //List<Signal> list = endLiveData.getValue();
         //endData=mSignalDao.getAllSignalls();
         //setEndData(endLiveData.getValue());
@@ -52,12 +53,20 @@ public class Repository {
         this.resultData = resultData;
     }
 
+    public void setResultIntegrateData(List<Signal> resultIntegrateData) {
+        this.resultIntegrateData = resultIntegrateData;
+    }
+
     public static LiveData<List<Signal>> getEndLiveData() {
         return endLiveData;
     }
 
     public List<Signal> getResultData() {
         return resultData;
+    }
+
+    public List<Signal> getResultIntegrateData() {
+        return resultIntegrateData;
     }
 
     void saveDataToDb(InsertAsyncTaskListener mListener) {
@@ -72,6 +81,7 @@ public class Repository {
 
         private SignalDao mAsyncTaskDao;
         private InsertAsyncTaskListener mListener;
+
         InsertAsyncTask(SignalDao dao, InsertAsyncTaskListener listener) {
             mAsyncTaskDao = dao;
             mListener = listener;
@@ -80,30 +90,28 @@ public class Repository {
         @Override
         protected Void doInBackground(Void... voids) {
             //entries.clear();
-            int j=0;
+            int j = 0;
             List<Integer> data = allData.getValue();
             List<Signal> signalData = new ArrayList<Signal>();
-            if(data.size()>0){
-                for (int i = 0; i < data.size()-1; i=i+2) {
-                    int bt = data.get(i) * 256 + data.get(i + 1);
+            if (data.size() > 0) {
+                for (int i = 0; i < data.size() - 1; i = i + 2) {
+                    float bt = (data.get(i) * 256 + data.get(i + 1))*0.11f;
                     signalData.add(new Signal(j, bt));
                     j++;
                 }
-            }
-            else
+            } else
                 signalData.add(new Signal(1, 0));
 
             mAsyncTaskDao.deleteAll();
             endData.postValue(new ArrayList<Signal>());
-            Log.d("Repository","endData post1");
+            Log.d("Repository", "endData post1");
             mAsyncTaskDao.insert(signalData);
 
             endData.postValue(signalData);
-            Log.d("Repository","endData post2");
-            try{
-                int i =endData.getValue().size();
-            }
-            catch (Exception ex){
+            Log.d("Repository", "endData post2");
+            try {
+                int i = endData.getValue().size();
+            } catch (Exception ex) {
                 int i = 0;
             }
             return null;
@@ -128,6 +136,7 @@ public class Repository {
     public static class InsertResultAsyncTask extends AsyncTask<Result, Void, Void> {
 
         private SignalDao mAsyncTaskDao;
+
         //private InsertAsyncTaskListener mListener;
         InsertResultAsyncTask(SignalDao dao) {
             mAsyncTaskDao = dao;
@@ -136,8 +145,8 @@ public class Repository {
 
         @Override
         protected Void doInBackground(Result... voids) {
-           // mAsyncTaskDao.insertResult(voids[0]);
-            Log.d("Repository","InsertResultAsyncTask");
+            // mAsyncTaskDao.insertResult(voids[0]);
+            Log.d("Repository", "InsertResultAsyncTask");
             return null;
         }
     }

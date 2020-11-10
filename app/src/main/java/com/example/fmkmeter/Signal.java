@@ -15,17 +15,17 @@ public class Signal {
         return time;
     }
 
-    public int getValue() {
+    public float getValue() {
         return value;
     }
 
-    public void setValue(int value) {
+    public void setValue(float value) {
         this.value=value;
     }
 
-    private int value;
+    private float value;
 
-    public Signal(int time, int value){
+    public Signal(int time, float value){
         this.time=time;
         this.value=value;
     }

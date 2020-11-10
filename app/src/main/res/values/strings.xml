@@ -32,6 +32,7 @@
     <string name="menu_nav_meter">Измерения</string>
     <string name="menu_nav_chart">График</string>
     <string name="menu_info">Инфо</string>
+    <string name="menu_settings">Настройки</string>
     <string name="menu_refresh">Обновить список</string>
     <string name="tv_tittle_all_byte">Всего байт:</string>
     <string name="tv_tittle_result_byte">Значимых байт:</string>
@@ -41,6 +42,8 @@
     <string name="tv_tittle_minmax">MinMax:</string>
     <string name="tv_tittle_size">Всего:</string>
     <string name="tv_tittle_index">Шаг:</string>
+
+    <string name="pref_count">Кол-во точек после макс/мин</string>
 
     <string name="msg_data_load_complete">Данные измерения подгружены, нажмите загрузить для отображения</string>
     <string name="msg_data_result_null">Нет данных удовлетворяющих условию</string>

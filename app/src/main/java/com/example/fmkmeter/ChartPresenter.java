@@ -10,10 +10,12 @@ import androidx.lifecycle.LifecycleOwner;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.OnLifecycleEvent;
 import androidx.navigation.Navigation;
+import androidx.preference.PreferenceManager;
 
 import android.Manifest;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
@@ -26,8 +28,8 @@ import com.github.mikephil.charting.data.LineData;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ChartPresenter<V extends ChartContractor.View> implements LifecycleObserver, 
-     ChartContractor.Presenter<V>, LineChartClass.LoadChartListener, CalculateAsyncTask.CalculateAsyncTaskListener,
+public class ChartPresenter<V extends ChartContractor.View> implements LifecycleObserver,
+        ChartContractor.Presenter<V>, LineChartClass.LoadChartListener, CalculateAsyncTask.CalculateAsyncTaskListener,
         SaveFileDialogFragment.SaveFileDialogListener {
     public static final String TAG = "ChartPresenter";
     private Bundle stateBundle;
@@ -42,17 +44,21 @@ public class ChartPresenter<V extends ChartContractor.View> implements Lifecycle
     private int indexLastStepChart = 0;
     private int countData = 0;
     private int stepChart = 0;
-    private int progressStep=0;
+    private int progressStep = 0;
     private int delta = 0;
-    private int mMinMax=0;
-    private int progressDelta=50;
-    private String mMessage="";
-    private String saveUchastok="";
-    private int saveNIzm=1;
-    private boolean isFirstTime=true;
+    private float mMinMax = 0;
+    private float mMinMaxIntegrate = 0;
+    private int progressDelta = 50;
+    private String mMessage = "";
+    private String saveUchastok = "";
+    private int saveNIzm = 1;
+    private boolean isFirstTime = true;
+    private int cntNLast = 2000;
+    private static final String KEY_CNT_N_LAST="cnt_n_last";
     Repository repository;
     LineChartClass lineChart = null;
     LifecycleOwner lifecycleOw;
+
     public void setContext(Context context) {
         this.context = context;
         lineChart = new LineChartClass(context, this);
@@ -61,24 +67,23 @@ public class ChartPresenter<V extends ChartContractor.View> implements Lifecycle
 
     public void setRepository(final Repository repository, LifecycleOwner lifecycleOwner, boolean isNewInstance) {
         view.showProgressBar(true);
-        lifecycleOw=lifecycleOwner;
+        lifecycleOw = lifecycleOwner;
         this.repository = repository;
-        if(isNewInstance)
+        if (isNewInstance)
             clearFragment();
-        if(repository.getEndData().getValue()==null) {
+        if (repository.getEndData().getValue() == null) {
             Log.d("ChartPresenter", "repository.initAllLiveData");
             view.showProgressBar(true);
             repository.initAllLiveData();
-        }
-        else
+        } else
             countData = this.repository.getEndData().getValue().size();
 
         Log.d("ChartPresenter", lifecycleOwner.toString());
         repository.getEndLiveData().observe(lifecycleOwner, new Observer<List<Signal>>() {
             @Override
             public void onChanged(@Nullable List<Signal> data) {
-                Log.d("ChartPresenter","EndLiveData onChanged "+data.size());
-                if(repository.getEndData().getValue()==null)
+                Log.d("ChartPresenter", "EndLiveData onChanged " + data.size());
+                if (repository.getEndData().getValue() == null)
                     repository.setEndData(data);
             }
         });
@@ -99,7 +104,7 @@ public class ChartPresenter<V extends ChartContractor.View> implements Lifecycle
                     //if (isFirstTime) {
                     isFirstTime = false;
                     mMessage = context.getString(R.string.msg_data_load_complete);
-                    Log.d("ChartPresenter", "isFirst "+mMessage);
+                    Log.d("ChartPresenter", "isFirst " + mMessage);
                     loadDataOnClick();
                     //}
                     //lineChart.setData(data);
@@ -108,7 +113,7 @@ public class ChartPresenter<V extends ChartContractor.View> implements Lifecycle
                     //if (isFirstTime) {
                     isFirstTime = false;
                     mMessage = context.getString(R.string.msg_data_not_found);
-                    Log.d("ChartPresenter", "isFirst "+mMessage);
+                    Log.d("ChartPresenter", "isFirst " + mMessage);
                     //}
                 }
                 view.showMessageForm(true, mMessage);
@@ -121,35 +126,33 @@ public class ChartPresenter<V extends ChartContractor.View> implements Lifecycle
     }
 
     @OnLifecycleEvent(Lifecycle.Event.ON_START)
-    private void initViews(){
+    private void initViews() {
         Log.d(TAG, "OnLifecycleEvent ON_START");
         view.setSwitch(isCheckedResult);
-        if(isCheckedResult) {
+        if (isCheckedResult) {
             view.setSeekBarDelta(progressDelta);
-            if(isLoadResultClicked) {
+            if (isLoadResultClicked) {
                 int step = repository.getResultData().size();
-                if(step>0) {
-                    lineChart.setData(repository.getResultData());
+                if (step > 0) {
+                    lineChart.setData(repository.getResultData(), new ArrayList<Signal>());
                     lineChart.setInitSettings(indexStepChart, step);
                     lineChart.loadChart();
                     lineChart.removeAllLimitLines(view.getChart());
                     //lineChart.setRedLine(view.getChart(), average, "Среднее: "+average);
-                    lineChart.setRedLine(view.getChart(), mMinMax, "MINMAX: "+mMinMax);
+                    lineChart.setRedLine(view.getChart(), mMinMax, "MINMAX: " + mMinMax);
                     view.setTVIndexChart(indexStepChart, indexLastStepChart);
-                    view.setMinMax(mMinMax);
+                    view.setMinMax(mMinMax, mMinMaxIntegrate);
                     view.showNextButton(false);
                     view.showPrewButton(false);
-                }
-                else{
+                } else {
                     view.showChartForm(false);
-                    mMessage=context.getString(R.string.msg_data_result_null);
+                    mMessage = context.getString(R.string.msg_data_result_null);
                     view.showMessageForm(true, mMessage);
                 }
             }
-        }
-        else {
+        } else {
             view.setSeekBarStep(progressStep);
-            if(isLoadClicked) {
+            if (isLoadClicked) {
                 int step = stepChart;
                 if (countData < step) {
                     step = countData;
@@ -157,7 +160,7 @@ public class ChartPresenter<V extends ChartContractor.View> implements Lifecycle
                 } else {
                     indexLastStepChart = countData / step;
                 }
-                lineChart.setData(repository.getEndData().getValue());
+                lineChart.setData(repository.getEndData().getValue(), new ArrayList<Signal>());
                 lineChart.setInitSettings(indexStepChart, step);
                 lineChart.loadChart();
                 view.setTVIndexChart(indexStepChart, indexLastStepChart);
@@ -173,13 +176,13 @@ public class ChartPresenter<V extends ChartContractor.View> implements Lifecycle
     }
 
     @Override
-    public void clearFragment(){
-        isCheckedResult=false;
+    public void clearFragment() {
+        isCheckedResult = false;
         clearElements();
         view.showProgressBar(false);
     }
 
-    private void clearElements(){
+    private void clearElements() {
         indexStepChart = 0;
         indexLastStepChart = 0;
         view.showMessageForm(true, mMessage);
@@ -198,7 +201,7 @@ public class ChartPresenter<V extends ChartContractor.View> implements Lifecycle
 
     @Override
     public void setSwitchChartValue(boolean isChecked) {
-        if(isCheckedResult!=isChecked) {
+        if (isCheckedResult != isChecked) {
             isCheckedResult = isChecked;
             clearElements();
         }
@@ -213,13 +216,14 @@ public class ChartPresenter<V extends ChartContractor.View> implements Lifecycle
     final public void detachLifecycle(Lifecycle lifecycle) {
         /*repository.getEndLiveData().removeObservers(lifecycleOw);
         repository.getEndData().removeObservers(lifecycleOw);*/
-        Log.d("ChartPresenter","detachLifecycle "+lifecycleOw.toString());
+        Log.d("ChartPresenter", "detachLifecycle " + lifecycleOw.toString());
         lifecycle.removeObserver(this);
     }
 
     @Override
     public void attachView(V view) {
-        this.view = view;
+        if(this.view==null)
+            this.view = view;
         //deviceUtils = new D2DeviceUtils(context);
     }
 
@@ -236,9 +240,9 @@ public class ChartPresenter<V extends ChartContractor.View> implements Lifecycle
     @Override
     public void setSeekBarStep(int progress, int step) {
         //if(stepChart==0){
-            stepChart = step;
-            //indexStepChart = 0;
-            progressStep=progress;
+        stepChart = step;
+        //indexStepChart = 0;
+        progressStep = progress;
         //}
     }
 
@@ -246,9 +250,9 @@ public class ChartPresenter<V extends ChartContractor.View> implements Lifecycle
     @Override
     public void setSeekBarDelta(int progress, int delta) {
         //if(this.delta==0) {
-            this.delta = delta;
-            progressDelta = progress;
-       // }
+        this.delta = delta;
+        progressDelta = progress;
+        // }
     }
 
     @Override
@@ -286,19 +290,20 @@ public class ChartPresenter<V extends ChartContractor.View> implements Lifecycle
 
     @Override
     public void loadDataOnClick() {
-        view.setMinMax(0);
+        view.setMinMax(0,0);
         repository.setResultData(null);
-        if(repository.getEndData().getValue()==null) {
+        repository.setResultIntegrateData(null);
+        if (repository.getEndData().getValue() == null) {
             view.showToastMessage(context.getString(R.string.msg_data_not_complete_load));
             return;
         }
 
         if (!view.getSwitchedResult()) {
             clearElements();
-            isLoadClicked=true;
-            lineChart.setData(repository.getEndData().getValue());
+            isLoadClicked = true;
+            lineChart.setData(repository.getEndData().getValue(), new ArrayList<Signal>());
             view.showProgressBar(true);
-            view.showMessageForm(false,null);
+            view.showMessageForm(false, null);
             int step = stepChart;
             if (countData < step) {
                 step = countData;
@@ -312,8 +317,16 @@ public class ChartPresenter<V extends ChartContractor.View> implements Lifecycle
             lineChart.loadChart();
             view.setTVIndexChart(indexStepChart, indexLastStepChart);
         } else {
-            isLoadResultClicked=true;
-            calculateAsyncTask = new CalculateAsyncTask(this);
+            isLoadResultClicked = true;
+            SharedPreferences sharedPreferences =
+                    PreferenceManager.getDefaultSharedPreferences(context);
+            try {
+                cntNLast = Integer.parseInt(sharedPreferences.getString(KEY_CNT_N_LAST, "2000"));
+            } catch (NumberFormatException nfe) {
+                cntNLast = 2000;
+            }
+            //view.showToastMessage(""+cntNLast);
+            calculateAsyncTask = new CalculateAsyncTask(this, cntNLast);
             calculateAsyncTask.setData(repository.getEndData().getValue());
             calculateAsyncTask.execute(delta);
         }
@@ -328,28 +341,29 @@ public class ChartPresenter<V extends ChartContractor.View> implements Lifecycle
     }
 
     @Override
-    public void onPostCalculateConcluded(List<Signal> outData, int minMax, int min, int max, int average) {
-        indexStepChart=0;
+    public void onPostCalculateConcluded(List<Signal> outData, List<Signal> outIntegrateData, float minMax, float minMaxIntegrate, float min, float max, float average) {
+        indexStepChart = 0;
         repository.setResultData(outData);
-        if(outData.size()>0) {
+        repository.setResultIntegrateData(outIntegrateData);
+        if (outData.size() > 0) {
             int step = outData.size();
             indexLastStepChart = 0;
-            mMinMax=minMax;
-            lineChart.setData(outData);
+            mMinMax = minMax;
+            mMinMaxIntegrate = minMaxIntegrate;
+            lineChart.setData(outData, outIntegrateData);
             lineChart.setInitSettings(indexStepChart, step);
             lineChart.loadChart();
             lineChart.removeAllLimitLines(view.getChart());
             //lineChart.setRedLine(view.getChart(), average, "Среднее: "+average);
-            lineChart.setRedLine(view.getChart(), minMax, "MINMAX: "+minMax);
+            lineChart.setRedLine(view.getChart(), minMax, "MINMAX: " + minMax);
             //lineChart.setRedLine(view.getChart(), max, "MAX: "+max);
-            view.showMessageForm(false,null);
+            view.showMessageForm(false, null);
             view.showChartForm(true);
             view.setTVIndexChart(indexStepChart, indexLastStepChart);
-            view.setMinMax(mMinMax);
+            view.setMinMax(mMinMax, mMinMaxIntegrate);
             view.showNextButton(false);
             view.showPrewButton(false);
-        }
-        else{
+        } else {
             view.showChartForm(false);
             mMessage = context.getString(R.string.msg_data_result_null);
             view.showMessageForm(true, mMessage);
@@ -375,9 +389,7 @@ public class ChartPresenter<V extends ChartContractor.View> implements Lifecycle
             Log.d("init", "runTimePermissions");
             view.runTimePermissions();
             //initLocation();
-        }
-        else
-        {
+        } else {
             view.showDialog();
         }
     }
@@ -390,16 +402,16 @@ public class ChartPresenter<V extends ChartContractor.View> implements Lifecycle
 
     @Override
     public void onSaveDialogPositiveClick(String uchastok, String put, String nOpora, String nIzm) {
-        String fileName=uchastok+"_"+put+"_"+nOpora+"_"+nIzm+".xml";
+        String fileName = uchastok + "_" + put + "_" + nOpora + "_" + nIzm + ".txt";
         List<Signal> signalData = new ArrayList<Signal>();
         signalData.add(new Signal(1, 123));
         signalData.add(new Signal(2, 456));
         signalData.add(new Signal(3, 79));
-        if(repository.getResultData()!=null && repository.getResultData().size()>0) {
-            view.showToastMessage(FileUtils.saveFile(repository.getResultData(), context, fileName));
+        //view.showToastMessage(FileUtils.saveFile(signalData, context, fileName));
+        if (repository.getResultData() != null && repository.getResultData().size() > 0) {
+            view.showToastMessage(FileUtils.saveFile(repository.getResultData(), repository.getResultIntegrateData(), context, fileName));
             saveUchastok = uchastok;
             saveNIzm = Integer.valueOf(nIzm) + 1;
-        }
-        else view.showToastMessage(context.getString(R.string.msg_data_not_found));
+        } else view.showToastMessage(context.getString(R.string.msg_data_not_found));
     }
 }

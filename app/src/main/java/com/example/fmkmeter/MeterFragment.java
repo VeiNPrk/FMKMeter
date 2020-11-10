@@ -5,6 +5,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+
 import androidx.databinding.DataBindingUtil;
 
 import android.hardware.usb.UsbDevice;
@@ -16,7 +17,10 @@ import androidx.databinding.ViewDataBinding;
 import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProviders;
+import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
+import androidx.navigation.fragment.NavHostFragment;
+import androidx.navigation.ui.NavigationUI;
 
 import android.text.method.ScrollingMovementMethod;
 import android.util.Log;
@@ -48,7 +52,7 @@ public /*abstract*/ class MeterFragment<V extends MeterContractor.View, P extend
         implements MeterContractor.View {
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    public static final String TAG="MeterFragment";
+    public static final String TAG = "MeterFragment";
     protected MeterContractor.Presenter presenter;
     private FragmentMeterBinding binding;
     private OnFragmentInteractionListener mListener;
@@ -77,8 +81,8 @@ public /*abstract*/ class MeterFragment<V extends MeterContractor.View, P extend
         super.onCreate(savedInstanceState);
         int izm;
         if (getArguments() != null) {
-             izm = getArguments().getInt("isStartIzm");
-             Log.d("onCreate", ""+izm);
+            izm = getArguments().getInt("isStartIzm");
+            Log.d("onCreate", "" + izm);
             /*mParam1 = getArguments().getString(ARG_PARAM1);
             mParam2 = getArguments().getString(ARG_PARAM2);*/
         }
@@ -92,7 +96,7 @@ public /*abstract*/ class MeterFragment<V extends MeterContractor.View, P extend
         View view = ((ViewDataBinding) binding).getRoot();
         initListeners();
         MeterViewModel viewModel =
-        ViewModelProviders.of(getActivity()).get(MeterViewModel.class);
+                ViewModelProviders.of(getActivity()).get(MeterViewModel.class);
         if (viewModel.getPresenter() == null) {
             viewModel.setPresenter(new MeterPresenter());
         }
@@ -104,7 +108,7 @@ public /*abstract*/ class MeterFragment<V extends MeterContractor.View, P extend
         setSpinners();
         setHasOptionsMenu(true);
         int isStartIzm = MeterFragmentArgs.fromBundle(getArguments()).getIsStartIzm();
-        if(isStartIzm==1)
+        if (isStartIzm == 1)
             presenter.startIzmOnClick();
         //return inflater.inflate(R.layout.fragment_meter, container, false);
         return view;
@@ -120,12 +124,18 @@ public /*abstract*/ class MeterFragment<V extends MeterContractor.View, P extend
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
 
-        switch (id){
+        switch (id) {
+            case R.id.nav_fragment_settings:
+                //NavHostFragment navHostFragment =  NavHostFragment.findNavController(this);
+                NavController navController = NavHostFragment.findNavController(this);
+                NavigationUI.onNavDestinationSelected(item, navController);
+                //NavController navController = NavHostFragment.findNavController(R.id.nav_host_fragment);
+                //item.onNavDestinationSelected(navController) || super.onOptionsItemSelected(item)
+                break;
             case R.id.menu_info:
                 presenter.getInfoDialog().show(getFragmentManager(), TAG);
                 break;
             case R.id.menu_refresh:
-                //spinnerListDevices.clear();
                 adapter.clear();
                 presenter.refreshOnClick();
                 adapter.notifyDataSetChanged();
@@ -164,7 +174,7 @@ public /*abstract*/ class MeterFragment<V extends MeterContractor.View, P extend
         }
     }
 
-    private void initListeners(){
+    private void initListeners() {
         //binding.tvRead.setMovementMethod(new ScrollingMovementMethod());
         binding.btnResult.setOnClickListener(new View.OnClickListener() {
             public void onClick(final View v) {
@@ -252,7 +262,7 @@ public /*abstract*/ class MeterFragment<V extends MeterContractor.View, P extend
     }
 
     @Override
-    public void showDialog(DialogFragment dialog){
+    public void showDialog(DialogFragment dialog) {
         dialog.show(getFragmentManager(), InfoDialogFragment.TAG);
     }
 
@@ -265,9 +275,10 @@ public /*abstract*/ class MeterFragment<V extends MeterContractor.View, P extend
     public void updateResult(int cnt) {
         binding.tvCountByteResult.setText("byteRes=" + cnt);
     }
+
     @Override
     public void showProgressBar(boolean tf) {
-        if(tf)
+        if (tf)
             binding.progressBar.setVisibility(View.VISIBLE);
         else
             binding.progressBar.setVisibility(View.GONE);
@@ -286,7 +297,7 @@ public /*abstract*/ class MeterFragment<V extends MeterContractor.View, P extend
 
     @Override
     public void izmIsStart(boolean isStart) {
-        if(isStart) {
+        if (isStart) {
             binding.btnStartIzm.setVisibility(View.GONE);
             binding.btnFinishIzm.setVisibility(View.VISIBLE);
         } else {
@@ -307,7 +318,7 @@ public /*abstract*/ class MeterFragment<V extends MeterContractor.View, P extend
             String action = intent.getAction();
             if (UsbManager.ACTION_USB_DEVICE_ATTACHED.equals(intent.getAction())) {
                 //Device was attached, ask for permission
-                UsbManager usbManager = (UsbManager)context.getSystemService(Context.USB_SERVICE);
+                UsbManager usbManager = (UsbManager) context.getSystemService(Context.USB_SERVICE);
                 UsbDevice device = intent.getParcelableExtra(UsbManager.EXTRA_DEVICE);
                 usbManager.requestPermission(device, PendingIntent.getBroadcast(context, 0, new Intent(ACTION_USB_PERMISSION), 0));
             } else if (UsbManager.ACTION_USB_DEVICE_DETACHED.equals(intent.getAction())) {

@@ -18,23 +18,23 @@ import java.util.List;
 
 public class MeterPresenter<V extends MeterContractor.View> implements LifecycleObserver, MeterContractor.Presenter<V>, ReaderAsyncTask.ReaderAsyncTaskListener, Repository.InsertAsyncTaskListener {
     public static final String TAG = "MeterPresenter";
-     private Bundle stateBundle;
-     private V view;
+    private Bundle stateBundle;
+    private V view;
     private Context context;
-     private D2DeviceUtils deviceUtils;
-     ReaderAsyncTask readerAsyncTask;
-     boolean isSingle=false;
-     boolean isIzmStart = false;
-     boolean isInsertDone=false;
-     boolean isInsertStart=false;
-     Repository repository;
-     LifecycleOwner ow1;
+    private D2DeviceUtils deviceUtils;
+    ReaderAsyncTask readerAsyncTask;
+    boolean isSingle = false;
+    boolean isIzmStart = false;
+    boolean isInsertDone = false;
+    boolean isInsertStart = false;
+    Repository repository;
+    LifecycleOwner ow1;
 
     public void setContext(Context context) {
         this.context = context;
     }
 
-    public void setRepository(Repository repository, LifecycleOwner lifecycleOwner){
+    public void setRepository(Repository repository, LifecycleOwner lifecycleOwner) {
         ow1 = lifecycleOwner;
         this.repository = repository;
         this.repository.getAllData().observe(lifecycleOwner, new Observer<List<Integer>>() {
@@ -49,73 +49,74 @@ public class MeterPresenter<V extends MeterContractor.View> implements Lifecycle
             public void onChanged(@Nullable List<Signal> data) {
                 Log.d("MeterPresenter", "EndData onChanged");
                 view.updateResult(data.size());
-                if(isInsertDone){
+                if (isInsertDone) {
                     view.showProgressBar(false);
-                    isInsertDone=false;
-                    isInsertStart=false;
+                    isInsertDone = false;
+                    isInsertStart = false;
                 }
             }
         });
-        if(isInsertStart)
+        if (isInsertStart)
             view.showProgressBar(true);
 
-        if(deviceUtils==null)
+        if (deviceUtils == null)
             deviceUtils = new D2DeviceUtils(context);
     }
 
     @Override
-     final public V getView() {
-         return view;
-     }
- 
-     @Override
-     final public void attachLifecycle(Lifecycle lifecycle) {
-         lifecycle.addObserver(this);
-     }
- 
-     @Override
-     final public void detachLifecycle(Lifecycle lifecycle) {
-         lifecycle.removeObserver(this);
-     }
+    final public V getView() {
+        return view;
+    }
+
+    @Override
+    final public void attachLifecycle(Lifecycle lifecycle) {
+        lifecycle.addObserver(this);
+    }
+
+    @Override
+    final public void detachLifecycle(Lifecycle lifecycle) {
+        lifecycle.removeObserver(this);
+    }
 
     @Override
     public void attachView(V view) {
         this.view = view;
         //deviceUtils = new D2DeviceUtils(context);
     }
- 
-     @Override
-     final public void detachView() {
-         view = null;
 
-     }
- 
-     @Override
-     final public boolean isViewAttached() {
-         return view != null;
-     }
+    @Override
+    final public void detachView() {
+        view = null;
+
+    }
+
+    @Override
+    final public boolean isViewAttached() {
+        return view != null;
+    }
 
     @OnLifecycleEvent(Lifecycle.Event.ON_START)
     public void viewOnStart() {
         view.izmIsStart(isIzmStart);
     }
- /*
-     @Override
-     final public Bundle getStateBundle() {
-         return stateBundle == null ? 
-                 stateBundle = new Bundle() : stateBundle;
-     }
-     */
-     @Override
-     public void onPresenterDestroy() {
-         if (stateBundle != null && !stateBundle.isEmpty()) {
-             stateBundle.clear();
-         }
-         if(deviceUtils.getDevice()!=null) {
-             deviceUtils.getDevice().close();
-             deviceUtils = null;
-         }
-     }
+
+    /*
+        @Override
+        final public Bundle getStateBundle() {
+            return stateBundle == null ?
+                    stateBundle = new Bundle() : stateBundle;
+        }
+        */
+    @Override
+    public void onPresenterDestroy() {
+        if (stateBundle != null && !stateBundle.isEmpty()) {
+            stateBundle.clear();
+        }
+        if (deviceUtils.getDevice() != null) {
+            deviceUtils.getDevice().close();
+            deviceUtils = null;
+        }
+    }
 
     @Override
     public DialogFragment getInfoDialog() {
@@ -146,7 +147,7 @@ public class MeterPresenter<V extends MeterContractor.View> implements Lifecycle
     }
 
     @Override
-     public void singlIzmOnClick(){
+    public void singlIzmOnClick() {
         Log.d(TAG, "SingleIzm");
         if (!deviceUtils.isOpened()) {
             view.showToast(context.getString(R.string.msg_device_not_open));
@@ -154,44 +155,42 @@ public class MeterPresenter<V extends MeterContractor.View> implements Lifecycle
         }
         deviceUtils.restartDevice();
         deviceUtils.setSettings();
-        isSingle=true;
+        isSingle = true;
         //read_thread.start();
         try {
             deviceUtils.singleIzm();
             StartThreadRead(deviceUtils.getDevice(), true);
-        }
-        catch (Exception ex)
-        {
+        } catch (Exception ex) {
             //binding.tvRead.setText(ex.toString());
             //Toast.makeText(this, ex.toString(), Toast.LENGTH_LONG);
         }
-     }
+    }
 
-     @Override
-     public void startIzmOnClick() {
-         Log.d(TAG, "StartIzm");
-         //clearChart();
-         if (!deviceUtils.isOpened()) {
-             view.showToast(context.getString(R.string.msg_device_not_open));
-             return;
-         }
-         StopThreadRead();
+    @Override
+    public void startIzmOnClick() {
+        Log.d(TAG, "StartIzm");
+        //clearChart();
+        if (!deviceUtils.isOpened()) {
+            view.showToast(context.getString(R.string.msg_device_not_open));
+            return;
+        }
+        StopThreadRead();
 
-         deviceUtils.restartDevice();
-         deviceUtils.setSettings();
+        deviceUtils.restartDevice();
+        deviceUtils.setSettings();
 
-         try {
-             deviceUtils.startIzm();
-             isIzmStart = true;
-             view.izmIsStart(isIzmStart);
-             StartThreadRead(deviceUtils.getDevice(), false);
-         } catch (Exception ex) {
-             //binding.tvRead.setText(ex.toString());
-         }
-     }
+        try {
+            deviceUtils.startIzm();
+            isIzmStart = true;
+            view.izmIsStart(isIzmStart);
+            StartThreadRead(deviceUtils.getDevice(), false);
+        } catch (Exception ex) {
+            //binding.tvRead.setText(ex.toString());
+        }
+    }
 
-     @Override
-     public void finishIzmOnClick(){
+    @Override
+    public void finishIzmOnClick() {
         Log.d(TAG, "FinishIzm");
         try {
             StopThreadRead();
@@ -202,14 +201,13 @@ public class MeterPresenter<V extends MeterContractor.View> implements Lifecycle
                 return;
             }
             deviceUtils.finishIzm();
-            isInsertStart=true;
+            isInsertStart = true;
             view.showProgressBar(true);
             //repository.saveDataToDb();
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             //binding.tvRead.setText(ex.toString());
         }
-     }
+    }
 
     @Override
     public void startIzmOnClickTest() {
@@ -225,16 +223,15 @@ public class MeterPresenter<V extends MeterContractor.View> implements Lifecycle
     }
 
     @Override
-    public void finishIzmOnClickTest(){
+    public void finishIzmOnClickTest() {
         Log.d(TAG, "FinishIzm");
         try {
             isIzmStart = false;
             view.izmIsStart(isIzmStart);
             repository.saveDataToDb(this);
-            isInsertStart=true;
+            isInsertStart = true;
             view.showProgressBar(true);
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
 
         }
     }
@@ -250,7 +247,7 @@ public class MeterPresenter<V extends MeterContractor.View> implements Lifecycle
         readerAsyncTask.execute();
     }
 
-     private void StopThreadRead() {
+    private void StopThreadRead() {
         if (readerAsyncTask == null) return;
         Log.d(TAG, "cancel result: " + readerAsyncTask.cancel(false));
     }
@@ -262,7 +259,7 @@ public class MeterPresenter<V extends MeterContractor.View> implements Lifecycle
 
     @Override
     public void onPostExecuteConcluded(boolean isSingle) {
-        if(isSingle)
+        if (isSingle)
             repository.saveDataToDb(this);
     }
 
@@ -273,16 +270,15 @@ public class MeterPresenter<V extends MeterContractor.View> implements Lifecycle
 
     @Override
     public void onPostInsertExecute() {
-         Log.d("MeterPresenter","onPostInsertExecute");
-        isInsertDone=true;
+        Log.d("MeterPresenter", "onPostInsertExecute");
+        isInsertDone = true;
         repository.initAllLiveData();
         view.showProgressBar(false);
-        isInsertDone=false;
-        isInsertStart=false;
-        try{
-            int i =repository.getEndData().getValue().size();
-        }
-        catch (Exception ex){
+        isInsertDone = false;
+        isInsertStart = false;
+        try {
+            int i = repository.getEndData().getValue().size();
+        } catch (Exception ex) {
             int i = 0;
         }
         view.goToResult();

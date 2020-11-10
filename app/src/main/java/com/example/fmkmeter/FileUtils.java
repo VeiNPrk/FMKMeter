@@ -7,10 +7,12 @@ import android.util.Xml;
 
 import org.xmlpull.v1.XmlSerializer;
 
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.io.StringWriter;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -23,11 +25,11 @@ public class FileUtils {
     private static final String ns = null;
     //private File mFileOutPut;
 
-    public static String saveFile(List<Signal> signals, Context context, String sOutPutfile){
-        String returnStr="";
+    public static String saveFile(List<Signal> signals, List<Signal> integrateSignals, Context context, String sOutPutfile) {
+        String returnStr = "";
         if (!isExternalStorageAvailable() || isExternalStorageReadOnly()) {
-            Log.d("Main",context.getString(R.string.msg_ext_stor_not));
-            returnStr=context.getString(R.string.msg_ext_stor_not);
+            Log.d("Main", context.getString(R.string.msg_ext_stor_not));
+            returnStr = context.getString(R.string.msg_ext_stor_not);
         } else {
             //String root = context.getExternalFilesDir("files").toString();
             //File myDir = new File(context.getExternalFilesDir("files").getParent());
@@ -37,19 +39,21 @@ public class FileUtils {
             //File(Environment.getExternalStorageDirectory(), "NewDirectory");
             //mediaFile.mkdirs();
             if (!myDir.exists()) {
-                if(!myDir.mkdirs()) {
+                if (!myDir.mkdirs()) {
                     Log.d("File", "mkdir not");
                     return "mkdir not";
                 }
             }
 
-            File file = new File (myDir, sOutPutfile);
-            if (file.exists ())
-                file.delete ();
-            returnStr = writeXml(signals, file, context);
+            File file = new File(myDir, sOutPutfile);
+            if (file.exists())
+                file.delete();
+            //returnStr = writeXml(signals, file, context);
+            returnStr = writeTxt(signals, integrateSignals, file, context);
         }
         return returnStr;
     }
+
     public static boolean isExternalStorageReadOnly() {
         String extStorageState = Environment.getExternalStorageState();
         if (Environment.MEDIA_MOUNTED_READ_ONLY.equals(extStorageState)) {
@@ -66,8 +70,46 @@ public class FileUtils {
         return false;
     }
 
+    public static String writeTxt(List<Signal> signals, List<Signal> integrateSignals, File mFileOutPut, Context context) {
+        String returnStr = "";
+        try {
+            FileOutputStream fileOutputStream = new FileOutputStream(mFileOutPut);
+
+            //OutputStreamWriter myOutWriter = new OutputStreamWriter(fileOutputStream);
+            BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(fileOutputStream));
+            for (Signal signal : signals) {
+                bw.write(String.valueOf(signal.getValue()));
+                bw.newLine();
+            }
+            bw.write("000000000");
+            bw.newLine();
+            for (Signal signal : integrateSignals) {
+                bw.write(String.valueOf(signal.getValue()));
+                bw.newLine();
+            }
+            bw.close();
+            //myOutWriter.close();
+            fileOutputStream.close();
+
+            returnStr = context.getString(R.string.msg_file_save_success) + mFileOutPut.getAbsolutePath();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+            returnStr = e.getMessage();
+        } catch (IllegalArgumentException e) {
+            e.printStackTrace();
+            returnStr = e.getMessage();
+        } catch (IllegalStateException e) {
+            e.printStackTrace();
+            returnStr = e.getMessage();
+        } catch (IOException e) {
+            e.printStackTrace();
+            returnStr = e.getMessage();
+        }
+        return returnStr;
+    }
+
     public static String writeXml(List<Signal> signals, File mFileOutPut, Context context) {
-        String returnStr="";
+        String returnStr = "";
         try {
             FileOutputStream fileOutputStream = new FileOutputStream(mFileOutPut);
             XmlSerializer xmlSerializer = Xml.newSerializer();
@@ -91,19 +133,19 @@ public class FileUtils {
             String dataWrite = writer.toString();
             fileOutputStream.write(dataWrite.getBytes());
             fileOutputStream.close();
-            returnStr = context.getString(R.string.msg_file_save_success)+mFileOutPut.getAbsolutePath();
+            returnStr = context.getString(R.string.msg_file_save_success) + mFileOutPut.getAbsolutePath();
         } catch (FileNotFoundException e) {
             e.printStackTrace();
-            returnStr=e.getMessage();
+            returnStr = e.getMessage();
         } catch (IllegalArgumentException e) {
             e.printStackTrace();
-            returnStr=e.getMessage();
+            returnStr = e.getMessage();
         } catch (IllegalStateException e) {
             e.printStackTrace();
-            returnStr=e.getMessage();
+            returnStr = e.getMessage();
         } catch (IOException e) {
             e.printStackTrace();
-            returnStr=e.getMessage();
+            returnStr = e.getMessage();
         }
         return returnStr;
     }
@@ -115,8 +157,8 @@ public class FileUtils {
         String country = "country";
         String director = "director";
         String cast = "cast";*/
-        int i=1;
-        for(Signal signal : signals){
+        int i = 1;
+        for (Signal signal : signals) {
             xmlSerializer.startTag(ns, value);
             xmlSerializer.attribute(ns, number, String.valueOf(i));
             xmlSerializer.text(String.valueOf(signal.getValue()));
