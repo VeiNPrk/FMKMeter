@@ -3,37 +3,15 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <!--<PreferenceCategory
-        app:key="help_category"
-        app:title="Общие">
-        <ListPreference
-        android:dialogTitle="@string/setting_inner_repeat_dialog_tittle"
-        android:entries="@array/settings_inner_repeats_tittles"
-        android:entryValues="@array/settings_inner_repeats_values"
-        android:key="setting_inner_repeats"
-        android:defaultValue="15"
-        android:summary="@string/setting_inner_repeat_summary"
-        android:title="@string/setting_inner_repeat_tittle" />
-    </PreferenceCategory>
-    <PreferenceCategory
-        app:key="help_category"
-        app:title="Праздники">
-        <MultiSelectListPreference
-            android:entries="@array/settings_holiday_type_tittles"
-            android:entryValues="@array/settings_holiday_type_values"
-            android:key="setting_notify_holiday_types"
-            android:title="@string/setting_notify_holiday_types_tittle"
-            android:dialogTitle="@string/setting_notify_holiday_types_dialog_tittle"/>
-        <com.vnprk.holidays.utils.TimePreference
-            android:defaultValue="0"
-            android:key="setting_notify_holiday_time"
-            android:summary="@string/setting_inner_repeat_summary"
-            android:title="@string/setting_notify_holiday_time_tittle" />
-    </PreferenceCategory>-->
     <EditTextPreference
         android:defaultValue="2000"
         android:key="cnt_n_last"
         android:selectAllOnFocus="true"
         android:singleLine="true"
         android:title="@string/pref_count" />
+
+    <SwitchPreference
+        android:defaultValue="false"
+        android:key="tf_integr"
+        android:title="@string/pref_inegr"/>
 </PreferenceScreen>

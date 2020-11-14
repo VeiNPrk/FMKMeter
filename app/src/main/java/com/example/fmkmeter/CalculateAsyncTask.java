@@ -24,16 +24,18 @@ public class CalculateAsyncTask extends AsyncTask<Integer, Void, Void> {
     int kRes = 7;
     int delta = 0;
     float dt=0.000012f;
+    boolean tfIntegrate = false;
     //float koef=0.11f;
 
     public interface CalculateAsyncTaskListener {
         void onPostCalculateConcluded(List<Signal> outData, List<Signal> outIntegrateData, float minMaxValue, float minMaxIntegrateValue, float min, float max, float average);
     }
 
-    public CalculateAsyncTask(CalculateAsyncTaskListener listener, int cntN) {
+    public CalculateAsyncTask(CalculateAsyncTaskListener listener, int cntN, boolean tf) {
         //mAsyncTaskDao = dao;
         mListener = listener;
         NLast = cntN;
+        tfIntegrate = tf;
     }
 
     final public void setData(List<Signal> _data) {
@@ -164,8 +166,10 @@ public class CalculateAsyncTask extends AsyncTask<Integer, Void, Void> {
                 outData.add(data.get(i));
 
             minMax = findMinMax(outData, delta, lastFindIndex);
-            outIntegrateData = doIntegrateSecond(doIntegrateFirst(outData));
-            minMaxIntegrate=findMinMaxIntegrate(outIntegrateData, delta, lastFindIndex);
+            if(tfIntegrate) {
+                outIntegrateData = doIntegrateSecond(doIntegrateFirst(outData));
+                minMaxIntegrate = findMinMaxIntegrate(outIntegrateData, delta, lastFindIndex);
+            }
             /*if(delta>0)
                 minMax-=deltaA;
             else

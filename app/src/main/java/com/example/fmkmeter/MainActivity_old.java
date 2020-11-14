@@ -163,7 +163,7 @@ public class MainActivity_old extends AppCompatActivity implements ReaderAsyncTa
     }
 
     private void startCalcTask(){
-        CalculateAsyncTask calcTask = new CalculateAsyncTask(this, 2000);
+        CalculateAsyncTask calcTask = new CalculateAsyncTask(this, 2000, false);
         //calcTask.setListener(this);
         calcTask.execute();
     }

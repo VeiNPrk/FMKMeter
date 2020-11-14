@@ -54,7 +54,9 @@ public class ChartPresenter<V extends ChartContractor.View> implements Lifecycle
     private int saveNIzm = 1;
     private boolean isFirstTime = true;
     private int cntNLast = 2000;
+    private boolean tfIntegr = false;
     private static final String KEY_CNT_N_LAST="cnt_n_last";
+    private static final String KEY_TF_INTEGR="tf_integr";
     Repository repository;
     LineChartClass lineChart = null;
     LifecycleOwner lifecycleOw;
@@ -325,8 +327,9 @@ public class ChartPresenter<V extends ChartContractor.View> implements Lifecycle
             } catch (NumberFormatException nfe) {
                 cntNLast = 2000;
             }
+            tfIntegr = sharedPreferences.getBoolean(KEY_TF_INTEGR, false);
             //view.showToastMessage(""+cntNLast);
-            calculateAsyncTask = new CalculateAsyncTask(this, cntNLast);
+            calculateAsyncTask = new CalculateAsyncTask(this, cntNLast, tfIntegr);
             calculateAsyncTask.setData(repository.getEndData().getValue());
             calculateAsyncTask.execute(delta);
         }

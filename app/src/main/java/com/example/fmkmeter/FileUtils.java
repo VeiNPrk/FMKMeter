@@ -1,9 +1,12 @@
 package com.example.fmkmeter;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Environment;
 import android.util.Log;
 import android.util.Xml;
+
+import androidx.preference.PreferenceManager;
 
 import org.xmlpull.v1.XmlSerializer;
 
@@ -74,18 +77,27 @@ public class FileUtils {
         String returnStr = "";
         try {
             FileOutputStream fileOutputStream = new FileOutputStream(mFileOutPut);
-
+            boolean tf = false;
+            SharedPreferences sharedPreferences =
+                    PreferenceManager.getDefaultSharedPreferences(context);
+            //try {
+                tf = sharedPreferences.getBoolean("tf_integr", false);
+           /* } catch (NumberFormatException nfe) {
+                tf = false;
+            }*/
             //OutputStreamWriter myOutWriter = new OutputStreamWriter(fileOutputStream);
             BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(fileOutputStream));
             for (Signal signal : signals) {
                 bw.write(String.valueOf(signal.getValue()));
                 bw.newLine();
             }
-            bw.write("000000000");
-            bw.newLine();
-            for (Signal signal : integrateSignals) {
-                bw.write(String.valueOf(signal.getValue()));
+            if(tf) {
+                bw.write("000000000");
                 bw.newLine();
+                for (Signal signal : integrateSignals) {
+                    bw.write(String.valueOf(signal.getValue()));
+                    bw.newLine();
+                }
             }
             bw.close();
             //myOutWriter.close();

@@ -44,6 +44,7 @@
     <string name="tv_tittle_index">Шаг:</string>
 
     <string name="pref_count">Кол-во точек после макс/мин</string>
+    <string name="pref_inegr">Интегрирование результатов</string>
 
     <string name="msg_data_load_complete">Данные измерения подгружены, нажмите загрузить для отображения</string>
     <string name="msg_data_result_null">Нет данных удовлетворяющих условию</string>
