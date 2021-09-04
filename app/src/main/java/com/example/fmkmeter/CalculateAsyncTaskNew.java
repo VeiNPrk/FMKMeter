@@ -6,17 +6,18 @@ import android.util.Log;
 import java.util.ArrayList;
 import java.util.List;
 
-public class CalculateAsyncTask extends AsyncTask<Integer, Void, Void> {
+public class CalculateAsyncTaskNew extends AsyncTask<Integer, Void, Void> {
 
     public static final String TAG = "CalculateAsyncTask";
-    private CalculateAsyncTask.CalculateAsyncTaskListener mListener;
+    private CalculateAsyncTaskNew.CalculateAsyncTaskNewListener mListener;
     private List<Signal> data = null;
     private List<Signal> outData = null;
     private List<Signal> outIntegrateFirstData = null;
     private List<Signal> outIntegrateSecondData = null;
     //double delta = 1.1;
     float minMax = 0;
-    float minMaxIntegrate = 0;
+    int[] indexesMinMax = {0, 0, 0, 0};
+    float minMaxSecondIntegrate = 0;
     float min = 0;
     float max = 0;
     float deltaA = 0;
@@ -28,11 +29,11 @@ public class CalculateAsyncTask extends AsyncTask<Integer, Void, Void> {
     boolean tfIntegrate = false;
     //float koef=0.11f;
 
-    public interface CalculateAsyncTaskListener {
-        void onPostCalculateConcluded(List<Signal> outData, List<Signal> outIntegrateFirstData, List<Signal> outIntegrateSecondData, float minMaxValue, float minMaxIntegrateValue, float min, float max, float average);
+    public interface CalculateAsyncTaskNewListener {
+        void onPostCalculateNewConcluded(List<Signal> outData, List<Signal> outIntegrateFirstData, List<Signal> outIntegrateSecondData, float minMaxValue, float minMaxIntegrateValue, int[] indexesMinMax/*float min, float max, float average*/);
     }
 
-    public CalculateAsyncTask(CalculateAsyncTaskListener listener, int cntN, boolean tf) {
+    public CalculateAsyncTaskNew(CalculateAsyncTaskNewListener listener, int cntN, boolean tf) {
         mListener = listener;
         NLast = cntN;
         tfIntegrate = tf;
@@ -42,7 +43,7 @@ public class CalculateAsyncTask extends AsyncTask<Integer, Void, Void> {
         data = _data;
     }
 
-    private boolean findCriticalTreshold(float iA, float deltaA, int delta) {
+    private boolean findCriticalTreshold(float iA, /*float deltaA,*/ int delta) {
         boolean tf = false;
         if (delta <= 0)
             tf = iA </*deltaA+*/delta;
@@ -91,6 +92,38 @@ public class CalculateAsyncTask extends AsyncTask<Integer, Void, Void> {
         return minMax/1000;
     }
 
+    private void findIndexesMinMax(List<Signal> data, List<Signal> firstIntegrateData){
+        float porog = -50;
+        int indexPorog = 0;
+        while(indexPorog<data.size() && data.get(indexPorog).getValue() > porog)
+            indexPorog++;
+
+        int index = indexPorog;
+        float min = data.get(index).getValue();
+        int minIndex = -1;
+        for (int i = index; i < data.size(); i++) {
+            if(data.get(i).getValue() < min){
+                min = data.get(i).getValue();
+                minIndex = i;
+            }
+        }
+        if(minIndex>-1)
+            indexesMinMax[0] = minIndex;
+        while(index<data.size()-1 && data.get(index).getValue() * data.get(index+1).getValue() > 0)
+            index++;
+
+        indexesMinMax[1] = index;
+        while(index<firstIntegrateData.size()-1 && firstIntegrateData.get(index).getValue() * firstIntegrateData.get(index+1).getValue() > 0)
+            index++;
+
+        indexesMinMax[2] = index;
+        while(index<data.size()-1 && data.get(index).getValue() * data.get(index+1).getValue() > 0)
+            index++;
+
+        indexesMinMax[3] = index;
+
+    }
+
     @Override
     protected void onPreExecute() {
         super.onPreExecute();
@@ -115,16 +148,16 @@ public class CalculateAsyncTask extends AsyncTask<Integer, Void, Void> {
             summN += data.get(i).getValue();
         }
         deltaA = summN / N;
-/*НА время тестирования с внешними данными
+/*НА время тестирования с внешними данными*/
         for (int i = 0; i < data.size(); i++) {
             float val = data.get(i).getValue() - deltaA;
             data.get(i).setValue(val);
-        }*/
+        }
 
         Log.d(TAG, "deltaA=" + deltaA + " delta=" + delta);
 
         while (j < data.size() && findIndex < 0) {
-            if (findCriticalTreshold(data.get(j).getValue(), deltaA, delta)) {
+            if (findCriticalTreshold(data.get(j).getValue(), /*deltaA,*/ delta)) {
                 if (k == 0)
                     firstFindIndex = j;
                 k++;
@@ -162,16 +195,25 @@ public class CalculateAsyncTask extends AsyncTask<Integer, Void, Void> {
 
             lastFindIndex -= startIndex;
 
-
             for (int i = startIndex; i < finalIndex; i++)
-                outData.add(data.get(i));
+                outData.add(new Signal(data.get(i).getTime(), (data.get(i).getValue() * 9.8f / 450)));
 
-            minMax = findMinMax(outData, delta, lastFindIndex);
             if(tfIntegrate) {
                 outIntegrateFirstData = doIntegrateFirst(outData);
                 outIntegrateSecondData = doIntegrateSecond(outIntegrateFirstData);
-                minMaxIntegrate = findMinMaxIntegrate(outIntegrateSecondData, delta, lastFindIndex);
+                for (int i = 0; i < outData.size(); i++) {
+                    float /*val = outData.get(i).getValue();
+                    outData.get(i).setValue(val);
+                    val = outIntegrateFirstData.get(i).getValue();
+                    outIntegrateFirstData.get(i).setValue(val);*/
+                    val = outIntegrateSecondData.get(i).getValue()*1000;
+                    outIntegrateSecondData.get(i).setValue(val);
+                }
+                findIndexesMinMax(outData, outIntegrateFirstData);
+                minMaxSecondIntegrate = findMinMaxIntegrate(outIntegrateSecondData, delta, lastFindIndex);
             }
+            minMax = findMinMax(outData, delta, lastFindIndex);
+
             /*if(delta>0)
                 minMax-=deltaA;
             else
@@ -184,40 +226,41 @@ public class CalculateAsyncTask extends AsyncTask<Integer, Void, Void> {
     protected void onPostExecute(Void aVoid) {
         super.onPostExecute(aVoid);
         if (mListener != null)
-            mListener.onPostCalculateConcluded(outData, outIntegrateFirstData, outIntegrateSecondData, minMax, minMaxIntegrate, min, max, deltaA);
+            mListener.onPostCalculateNewConcluded(outData, outIntegrateFirstData, outIntegrateSecondData, minMax, minMaxSecondIntegrate, indexesMinMax/*min, max, deltaA*/);
     }
 
     private List<Signal> doIntegrateFirst(List<Signal> data){
-        List<Signal> integrateData = new ArrayList<Signal>();
+        List<Signal> integrateData = data;
         List<Signal> integrateOutData = new ArrayList<Signal>();
-        integrateData=data;
         float summN=0;
         int integrateN=N/2;
         float deltaIntegrate = 0;
-        for (int i = 0; i < integrateN; i++) {
-            summN += integrateData.get(i).getValue();
-        }
-        deltaIntegrate = summN / integrateN;
 
-        for (int i = 0; i < integrateData.size(); i++) {
-            float val = integrateData.get(i).getValue() - deltaIntegrate;
-            integrateData.get(i).setValue(val);
-        }
         float v0 = 0;
         integrateOutData.clear();
         integrateOutData.add(new Signal(integrateData.get(0).getTime(), v0));
         for (int i = 0; i < integrateData.size()-1; i++) {
-            float val = integrateOutData.get(i).getValue() + integrateData.get(i).getValue();
+            float val = integrateOutData.get(i).getValue() + integrateData.get(i+1).getValue()/42000;
             integrateOutData.add(new Signal(integrateData.get(i+1).getTime(), val));
+        }
+
+        for (int i = 0; i < integrateN; i++) {
+            summN += integrateOutData.get(i).getValue();
+        }
+        deltaIntegrate = summN / integrateN;
+
+        for (int i = 0; i < integrateOutData.size(); i++) {
+            float val = integrateOutData.get(i).getValue() - deltaIntegrate;
+            integrateOutData.get(i).setValue(val);
         }
         return integrateOutData;
     }
 
     private List<Signal> doIntegrateSecond(List<Signal> data){
-        List<Signal> integrateData = new ArrayList<Signal>();
+        List<Signal> integrateData = data;
         List<Signal> integrateOutData = new ArrayList<Signal>();
-        integrateData=data;
-        float summN=0;
+        //integrateData=data;
+        /*float summN=0;
         int integrateN=N/2;
         float deltaIntegrate = 0;
         for (int i = 0; i < integrateN; i++) {
@@ -228,18 +271,18 @@ public class CalculateAsyncTask extends AsyncTask<Integer, Void, Void> {
         for (int i = 0; i < integrateData.size(); i++) {
             float val = integrateData.get(i).getValue() - deltaIntegrate;
             integrateData.get(i).setValue(val);
-        }
+        }*/
         float v0 = 0;
         integrateOutData.clear();
         integrateOutData.add(new Signal(integrateData.get(0).getTime(), v0));
         for (int i = 0; i < integrateData.size()-1; i++) {
-            float val = integrateOutData.get(i).getValue() + integrateData.get(i).getValue()/**dt/**dt/**1000*/;
+            float val = integrateOutData.get(i).getValue() + integrateData.get(i+1).getValue()/42000/**dt/**dt/**1000*/;
             integrateOutData.add(new Signal(integrateData.get(i+1).getTime(), val));
         }
-        for (int i = 0; i < integrateOutData.size(); i++) {
+        /*for (int i = 0; i < integrateOutData.size(); i++) {
             float val = integrateOutData.get(i).getValue()*dt*dt*1000000;
             integrateOutData.get(i).setValue(val);
-        }
+        }*/
         return integrateOutData;
     }
 

@@ -826,7 +826,7 @@ public class MainActivity_old extends AppCompatActivity implements ReaderAsyncTa
     }*/
 
     @Override
-    public void onPostCalculateConcluded(List<Signal> outData, List<Signal> outIntegrateData, float minMaxValue, float minMaxIntegrateValue, float min, float max, float average) {
+    public void onPostCalculateConcluded(List<Signal> outData, List<Signal> outIntegrateFirstData, List<Signal> outIntegrateSecondData, float minMaxValue, float minMaxIntegrateValue, float min, float max, float average) {
 
     }
 /*

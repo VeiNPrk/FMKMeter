@@ -10,6 +10,16 @@
         tools:context=".MainActivity_old">
 
         <Button
+            android:id="@+id/btnTestData"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="Тестовые данные"
+            android:textSize="20sp"
+            android:visibility="gone"
+            app:layout_constraintBottom_toTopOf="@+id/btnResult"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="@+id/guideline3" />
+        <Button
             android:id="@+id/btnResult"
             android:layout_width="0dp"
             android:layout_height="wrap_content"

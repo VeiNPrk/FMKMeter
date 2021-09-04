@@ -224,16 +224,7 @@ public class MeterPresenter<V extends MeterContractor.View> implements Lifecycle
 
     @Override
     public void finishIzmOnClickTest() {
-        Log.d(TAG, "FinishIzm");
-        try {
-            isIzmStart = false;
-            view.izmIsStart(isIzmStart);
-            repository.saveDataToDb(this);
-            isInsertStart = true;
-            view.showProgressBar(true);
-        } catch (Exception ex) {
-
-        }
+        repository.saveDataToDb(new TestData().getTestSignals(), this);
     }
 
     @Override

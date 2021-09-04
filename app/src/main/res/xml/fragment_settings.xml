@@ -14,4 +14,39 @@
         android:defaultValue="false"
         android:key="tf_integr"
         android:title="@string/pref_inegr"/>
+    <SwitchPreference
+        android:defaultValue="false"
+        android:dependency="tf_integr"
+        android:key="tf_visible_first_integr"
+        android:title="@string/pref_visible_first_integr"
+        android:summary="@string/pref_summary_visible_first_integr"/>
+    <SwitchPreference
+        android:defaultValue="false"
+        android:dependency="tf_integr"
+        android:key="tf_use_new_integr"
+        android:title="@string/pref_use_new_inegr"/>
+    <SwitchPreference
+        android:defaultValue="false"
+        android:key="setting_delayed_start"
+        android:title="@string/pref_delayed_start"
+        android:summary="@string/pref_summary_delayed_start"/>
+    <EditTextPreference
+        android:key="setting_delayed_start_time"
+        android:dependency="setting_delayed_start"
+        android:defaultValue="3"
+        android:selectAllOnFocus="true"
+        android:singleLine="true"
+        android:title="@string/pref_delayed_start_time" />
+    <SwitchPreference
+        android:defaultValue="false"
+        android:key="setting_automatic_measurements"
+        android:title="@string/pref_automatic_measurements"
+        android:summary="@string/pref_summary_automatic_measurements"/>
+    <EditTextPreference
+        android:key="time_dimension"
+        android:defaultValue="4"
+        android:dependency="setting_automatic_measurements"
+        android:selectAllOnFocus="true"
+        android:singleLine="true"
+        android:title="@string/pref_time_dimension" />
 </PreferenceScreen>

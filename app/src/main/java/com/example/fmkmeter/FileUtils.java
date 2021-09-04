@@ -28,7 +28,7 @@ public class FileUtils {
     private static final String ns = null;
     //private File mFileOutPut;
 
-    public static String saveFile(List<Signal> signals, List<Signal> integrateSignals, Context context, String sOutPutfile) {
+    public static String saveFile(List<Signal> signals, List<Signal> integrateFirstSignals, List<Signal> integrateSecondSignals, Context context, String sOutPutfile) {
         String returnStr = "";
         if (!isExternalStorageAvailable() || isExternalStorageReadOnly()) {
             Log.d("Main", context.getString(R.string.msg_ext_stor_not));
@@ -52,7 +52,7 @@ public class FileUtils {
             if (file.exists())
                 file.delete();
             //returnStr = writeXml(signals, file, context);
-            returnStr = writeTxt(signals, integrateSignals, file, context);
+            returnStr = writeTxt(signals, integrateFirstSignals, integrateSecondSignals, file, context);
         }
         return returnStr;
     }
@@ -73,28 +73,27 @@ public class FileUtils {
         return false;
     }
 
-    public static String writeTxt(List<Signal> signals, List<Signal> integrateSignals, File mFileOutPut, Context context) {
+    public static String writeTxt(List<Signal> signals, List<Signal> integrateFirstSignals, List<Signal> integrateSecondSignals, File mFileOutPut, Context context) {
         String returnStr = "";
         try {
             FileOutputStream fileOutputStream = new FileOutputStream(mFileOutPut);
-            boolean tf = false;
-            SharedPreferences sharedPreferences =
-                    PreferenceManager.getDefaultSharedPreferences(context);
-            //try {
-                tf = sharedPreferences.getBoolean("tf_integr", false);
-           /* } catch (NumberFormatException nfe) {
-                tf = false;
-            }*/
-            //OutputStreamWriter myOutWriter = new OutputStreamWriter(fileOutputStream);
             BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(fileOutputStream));
             for (Signal signal : signals) {
                 bw.write(String.valueOf(signal.getValue()));
                 bw.newLine();
             }
-            if(tf) {
+            if(integrateFirstSignals!=null && integrateFirstSignals.size()>0) {
                 bw.write("000000000");
                 bw.newLine();
-                for (Signal signal : integrateSignals) {
+                for (Signal signal : integrateFirstSignals) {
+                    bw.write(String.valueOf(signal.getValue()));
+                    bw.newLine();
+                }
+            }
+            if(integrateSecondSignals!=null && integrateSecondSignals.size()>0) {
+                bw.write("000000000");
+                bw.newLine();
+                for (Signal signal : integrateSecondSignals) {
                     bw.write(String.valueOf(signal.getValue()));
                     bw.newLine();
                 }
@@ -165,10 +164,6 @@ public class FileUtils {
     public static void insertSignals(XmlSerializer xmlSerializer, List<Signal> signals) throws IOException {
         final String value = "value";
         String number = "number";
-        /*String runningTime = "runningTime";
-        String country = "country";
-        String director = "director";
-        String cast = "cast";*/
         int i = 1;
         for (Signal signal : signals) {
             xmlSerializer.startTag(ns, value);
@@ -176,22 +171,6 @@ public class FileUtils {
             xmlSerializer.text(String.valueOf(signal.getValue()));
             xmlSerializer.endTag(null, value);
             i++;
-
-            /*xmlSerializer.startTag(ns, runningTime);
-            xmlSerializer.text(filmObject.getRunningTime());
-            xmlSerializer.endTag(ns, runningTime);*/
-
-            /*xmlSerializer.startTag(ns, country);
-            xmlSerializer.text(filmObject.getCountry());
-            xmlSerializer.endTag(ns, country);
-
-            xmlSerializer.startTag(ns, director);
-            xmlSerializer.text(filmObject.getDirector());
-            xmlSerializer.endTag(ns, director);
-
-            xmlSerializer.startTag(ns, cast);
-            insertCast(xmlSerializer, filmObject.getCast());
-            xmlSerializer.endTag(ns, cast);*/
         }
     }
 }

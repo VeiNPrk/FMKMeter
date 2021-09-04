@@ -344,9 +344,9 @@ public class ChartFragment<V extends ChartContractor.View, P extends ChartContra
     }
 
     @Override
-    public void setMinMax(float minMax, float minMaxIntegrate) {
-        binding.tvMinMax.setText("" + minMax);
-        binding.tvMinMaxIntegrate.setText("" + minMaxIntegrate);
+    public void setMinMax(String minMax, String minMaxIntegrate) {
+        binding.tvMinMax.setText(minMax);
+        binding.tvMinMaxIntegrate.setText(minMaxIntegrate);
     }
 
     @Override

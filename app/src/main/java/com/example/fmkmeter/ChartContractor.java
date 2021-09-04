@@ -25,7 +25,7 @@ public interface ChartContractor {
 
           void setTVIndexChart(int indexChart, int lastIndexChart);
 
-         void setMinMax(float minMax, float minMaxIntegrate);
+         void setMinMax(String minMax, String minMaxIntegrate);
 
           boolean getSwitchedResult();
 

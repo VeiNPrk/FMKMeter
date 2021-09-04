@@ -17,7 +17,8 @@ public class Repository {
     private static MutableLiveData<List<Signal>> endData = new MutableLiveData<List<Signal>>();
     private static LiveData<List<Signal>> endLiveData;
     private List<Signal> resultData = null;
-    private List<Signal> resultIntegrateData = null;
+    private List<Signal> resultFirstIntegrateData = null;
+    private List<Signal> resultSecondIntegrateData = null;
     private SignalDao mSignalDao;
 
     Repository(Application application) {
@@ -32,9 +33,6 @@ public class Repository {
     public void initAllLiveData() {
         endLiveData = mSignalDao.getAllSignalls();
         Log.d("Repository", "initAllLiveData");
-        //List<Signal> list = endLiveData.getValue();
-        //endData=mSignalDao.getAllSignalls();
-        //setEndData(endLiveData.getValue());
     }
 
     public static void setEndData(List<Signal> data) {
@@ -53,8 +51,12 @@ public class Repository {
         this.resultData = resultData;
     }
 
-    public void setResultIntegrateData(List<Signal> resultIntegrateData) {
-        this.resultIntegrateData = resultIntegrateData;
+    public void setResultFirstIntegrateData(List<Signal> resultFirstIntegrateData) {
+        this.resultFirstIntegrateData = resultFirstIntegrateData;
+    }
+
+    public void setResultSecondIntegrateData(List<Signal> resultSecondIntegrateData) {
+        this.resultSecondIntegrateData = resultSecondIntegrateData;
     }
 
     public static LiveData<List<Signal>> getEndLiveData() {
@@ -65,12 +67,20 @@ public class Repository {
         return resultData;
     }
 
-    public List<Signal> getResultIntegrateData() {
-        return resultIntegrateData;
+    public List<Signal> getResultFirstIntegrateData() {
+        return resultFirstIntegrateData;
+    }
+
+    public List<Signal> getResultSecondIntegrateData() {
+        return resultSecondIntegrateData;
     }
 
     void saveDataToDb(InsertAsyncTaskListener mListener) {
         new InsertAsyncTask(mSignalDao, mListener).execute();
+    }
+
+    void saveDataToDb(List<Signal> signalData, InsertAsyncTaskListener mListener) {
+        new InsertAsyncTask(signalData, mSignalDao, mListener).execute();
     }
 
     public interface InsertAsyncTaskListener {
@@ -81,33 +91,41 @@ public class Repository {
 
         private SignalDao mAsyncTaskDao;
         private InsertAsyncTaskListener mListener;
+        private List<Signal> mData = null;
 
         InsertAsyncTask(SignalDao dao, InsertAsyncTaskListener listener) {
             mAsyncTaskDao = dao;
             mListener = listener;
         }
 
+        InsertAsyncTask(List<Signal> signalData, SignalDao dao, InsertAsyncTaskListener listener) {
+            mAsyncTaskDao = dao;
+            mListener = listener;
+            mData = signalData;
+        }
+
         @Override
         protected Void doInBackground(Void... voids) {
             //entries.clear();
-            int j = 0;
-            List<Integer> data = allData.getValue();
-            List<Signal> signalData = new ArrayList<Signal>();
-            if (data.size() > 0) {
-                for (int i = 0; i < data.size() - 1; i = i + 2) {
-                    float bt = (data.get(i) * 256 + data.get(i + 1))/**0.11f*/;
-                    signalData.add(new Signal(j, bt));
-                    j++;
-                }
-            } else
-                signalData.add(new Signal(1, 0));
-
+            if(mData==null) {
+                int j = 0;
+                List<Integer> data = allData.getValue();
+                mData = new ArrayList<Signal>();
+                if (data.size() > 0) {
+                    for (int i = 0; i < data.size() - 1; i = i + 2) {
+                        float bt = (data.get(i) * 256 + data.get(i + 1))/**0.11f*/;
+                        mData.add(new Signal(j, bt));
+                        j++;
+                    }
+                } else
+                    mData.add(new Signal(1, 0));
+            }
             mAsyncTaskDao.deleteAll();
             endData.postValue(new ArrayList<Signal>());
             Log.d("Repository", "endData post1");
-            mAsyncTaskDao.insert(signalData);
+            mAsyncTaskDao.insert(mData);
 
-            endData.postValue(signalData);
+            endData.postValue(mData);
             Log.d("Repository", "endData post2");
             try {
                 int i = endData.getValue().size();

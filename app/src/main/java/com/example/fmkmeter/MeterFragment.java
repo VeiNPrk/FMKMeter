@@ -175,27 +175,21 @@ public /*abstract*/ class MeterFragment<V extends MeterContractor.View, P extend
     }
 
     private void initListeners() {
-        //binding.tvRead.setMovementMethod(new ScrollingMovementMethod());
         binding.btnResult.setOnClickListener(new View.OnClickListener() {
             public void onClick(final View v) {
                 Navigation.findNavController(v).navigate(R.id.action_meterFragment_to_chartFragment);
-                //presenter.resultOnClick();
             }
         });
         binding.btnStartIzm.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 presenter.startIzmOnClick();
-                //presenter.startIzmOnClickTest();
-                //StartIzmNew();
             }
         });
         binding.btnFinishIzm.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 presenter.finishIzmOnClick();
-                //presenter.finishIzmOnClickTest();
-                //FinishIzmNew();
             }
         });
         binding.btnSingleIzm.setOnClickListener(new View.OnClickListener() {
@@ -205,6 +199,12 @@ public /*abstract*/ class MeterFragment<V extends MeterContractor.View, P extend
                 //SingleIzmNew();
             }
         });
+        /*binding.btnTestData.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                presenter.finishIzmOnClickTest();
+            }
+        });*/
 
         IntentFilter filter = new IntentFilter();
         filter.addAction(UsbManager.ACTION_USB_DEVICE_DETACHED);

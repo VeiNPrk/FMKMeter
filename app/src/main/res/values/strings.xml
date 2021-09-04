@@ -72,5 +72,14 @@
     <string name="dlg_save_tv_hint_put">Введите путь</string>
     <string name="dlg_save_tv_hint_nopor">Введите № опоры</string>
     <string name="dlg_save_tv_hint_nizm">Введите № измерения</string>
+    <string name="pref_use_new_inegr">Использовать последний метод интегрирования</string>
+    <string name="pref_time_dimension">Длительность измерения</string>
+    <string name="pref_visible_first_integr">Отображать первое интегрирование</string>
+    <string name="pref_summary_visible_first_integr">На графике будут отображаться результаты первого интегрирования</string>
+    <string name="pref_delayed_start">Отложенный старт</string>
+    <string name="pref_summary_delayed_start">(ПОКА НЕ РАБОТАЕТ)Измерение будет запускаться не сразу после нажатия на кнопку</string>
+    <string name="pref_delayed_start_time">Длительность отложенного старта</string>
+    <string name="pref_automatic_measurements">Автоматические измерения</string>
+    <string name="pref_summary_automatic_measurements">(ПОКА НЕ РАБОТАЕТ)Новое измерение будет автоматически начинаться после завершения и сохранения данных предыдущего</string>
 
 </resources>
