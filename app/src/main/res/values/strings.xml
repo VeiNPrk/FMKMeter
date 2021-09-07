@@ -81,5 +81,7 @@
     <string name="pref_delayed_start_time">Длительность отложенного старта</string>
     <string name="pref_automatic_measurements">Автоматические измерения</string>
     <string name="pref_summary_automatic_measurements">(ПОКА НЕ РАБОТАЕТ)Новое измерение будет автоматически начинаться после завершения и сохранения данных предыдущего</string>
+    <string name="timer_start_title">До начала измерения:</string>
+    <string name="timer_measurements_title">До конца измерения:</string>
 
 </resources>

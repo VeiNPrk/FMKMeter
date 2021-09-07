@@ -23,8 +23,6 @@ import java.util.List;
 import java.util.Locale;
 
 public class FileUtils {
-    //Context context=null;
-    //private static String sOutPutfile = "Films.xml";
     private static final String ns = null;
     //private File mFileOutPut;
 
