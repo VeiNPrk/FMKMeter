@@ -12,6 +12,7 @@ import android.content.Context;
 import android.os.Bundle;
 import android.util.Log;
 
+import com.example.fmkmeter.utils.D2DeviceUtils;
 import com.ftdi.j2xx.FT_Device;
 
 import java.util.List;
@@ -25,18 +26,23 @@ public class MeterPresenter<V extends MeterContractor.View> implements Lifecycle
     ReaderAsyncTask readerAsyncTask;
     boolean isSingle = false;
     boolean isIzmStart = false;
+    boolean isAutoStart = false;
     boolean isInsertDone = false;
     boolean isInsertStart = false;
     Repository repository;
     LifecycleOwner ow1;
 
+    public MeterPresenter(Context context, Repository repository){
+        this.context = context;
+        this.repository = repository;
+    }
     public void setContext(Context context) {
         this.context = context;
     }
 
-    public void setRepository(Repository repository, LifecycleOwner lifecycleOwner) {
+    public void setLifecycleOwner(/*Repository repository, */LifecycleOwner lifecycleOwner) {
         ow1 = lifecycleOwner;
-        this.repository = repository;
+        //this.repository = repository;
         this.repository.getAllData().observe(lifecycleOwner, new Observer<List<Integer>>() {
             @Override
             public void onChanged(@Nullable List<Integer> data) {
@@ -166,14 +172,18 @@ public class MeterPresenter<V extends MeterContractor.View> implements Lifecycle
         }
     }
 
+    public boolean deviceIsOpened(){
+        return deviceUtils.isOpened();
+    }
+
     @Override
     public void startIzmOnClick() {
-        Log.d(TAG, "StartIzm");
-        //clearChart();
-        if (!deviceUtils.isOpened()) {
+        Log.d(TAG, "startIzmOnClick");
+        /*if (!deviceUtils.isOpened()) {
             view.showToast(context.getString(R.string.msg_device_not_open));
             return;
-        }
+        }*/
+        //Log.d(TAG, "StartIzm");
         StopThreadRead();
 
         deviceUtils.restartDevice();

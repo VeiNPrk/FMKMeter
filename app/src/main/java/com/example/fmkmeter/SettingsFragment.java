@@ -35,7 +35,7 @@ public class SettingsFragment extends PreferenceFragmentCompat {
                 }
             });
         }
-        EditTextPreference timeDimensionPreference = findPreference("time_dimension");
+        EditTextPreference timeDimensionPreference = findPreference("setting_auto_measurement_time");
         if (timeDimensionPreference != null) {
             timeDimensionPreference.setOnBindEditTextListener(
                     new EditTextPreference.OnBindEditTextListener() {

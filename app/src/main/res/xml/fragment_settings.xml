@@ -43,7 +43,7 @@
         android:title="@string/pref_automatic_measurements"
         android:summary="@string/pref_summary_automatic_measurements"/>
     <EditTextPreference
-        android:key="time_dimension"
+        android:key="setting_auto_measurement_time"
         android:defaultValue="4"
         android:dependency="setting_automatic_measurements"
         android:selectAllOnFocus="true"

@@ -19,6 +19,7 @@
             app:layout_constraintBottom_toTopOf="@+id/btnResult"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="@+id/guideline3" />
+
         <Button
             android:id="@+id/btnResult"
             android:layout_width="0dp"
@@ -31,8 +32,7 @@
             android:textSize="20sp"
             app:layout_constraintBottom_toTopOf="@+id/btnSingleIzm"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="@+id/guideline3"
-            app:layout_constraintTop_toBottomOf="@+id/spnSi" />
+            app:layout_constraintStart_toStartOf="@+id/guideline3" />
 
         <Button
             android:id="@+id/btnSingleIzm"
@@ -157,11 +157,11 @@
             android:layout_height="wrap_content"
             android:gravity="center"
             android:orientation="vertical"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toStartOf="@+id/guideline3"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/tvCountByteResult"
-            app:layout_constraintVertical_bias="0.3">
+            android:visibility="gone"
+            app:layout_constraintBottom_toTopOf="@+id/btnTestData"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="@+id/guideline3"
+            app:layout_constraintTop_toBottomOf="@+id/spnSi">
 
             <TextView
                 android:layout_width="match_parent"
@@ -183,6 +183,7 @@
             android:layout_height="wrap_content"
             android:gravity="center"
             android:orientation="vertical"
+            android:visibility="invisible"
             app:layout_constraintBottom_toTopOf="@+id/textView2"
             app:layout_constraintEnd_toStartOf="@+id/guideline3"
             app:layout_constraintStart_toStartOf="parent"

@@ -6,6 +6,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.databinding.DataBindingUtil;
 
 import android.hardware.usb.UsbDevice;
@@ -16,12 +18,14 @@ import android.os.Bundle;
 import androidx.databinding.ViewDataBinding;
 import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 import androidx.navigation.fragment.NavHostFragment;
 import androidx.navigation.ui.NavigationUI;
 
+import android.os.CountDownTimer;
 import android.text.method.ScrollingMovementMethod;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -35,6 +39,7 @@ import android.widget.ArrayAdapter;
 import android.widget.Toast;
 
 import com.example.fmkmeter.databinding.FragmentMeterBinding;
+import com.example.fmkmeter.utils.SharedPreferenceUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -54,11 +59,15 @@ public /*abstract*/ class MeterFragment<V extends MeterContractor.View, P extend
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     public static final String TAG = "MeterFragment";
     protected MeterContractor.Presenter presenter;
+    private boolean isIzmStart = false;
     private FragmentMeterBinding binding;
     private OnFragmentInteractionListener mListener;
     ArrayAdapter<String> adapter;
+    private CountDownTimer timerStart = null;
+    private CountDownTimer timerMeasurment = null;
     private List<String> spinnerListDevices = new ArrayList<String>();
     private PendingIntent mPermissionIntent;
+    MeterViewModel viewModel;
     private static final String ACTION_USB_PERMISSION = "com.android.example.USB_PERMISSION";
 
     public MeterFragment() {
@@ -95,15 +104,17 @@ public /*abstract*/ class MeterFragment<V extends MeterContractor.View, P extend
         binding = DataBindingUtil.inflate(inflater, R.layout.fragment_meter, container, false);
         View view = ((ViewDataBinding) binding).getRoot();
         initListeners();
-        MeterViewModel viewModel =
+        viewModel =
                 ViewModelProviders.of(getActivity()).get(MeterViewModel.class);
-        if (viewModel.getPresenter() == null) {
+        /*if (viewModel.getPresenter() == null) {
             viewModel.setPresenter(new MeterPresenter());
-        }
+        }*/
         presenter = viewModel.getPresenter();
         presenter.attachLifecycle(getLifecycle());
-        presenter.attachView((V) this);
-        presenter.setRepository(viewModel.getRepository(), this);
+        //presenter.attachView((V) this);
+        presenter.setLifecycleOwner(/*viewModel.getRepository(), */this);
+        timerStart = viewModel.getStartTimer(SharedPreferenceUtils.getDelayedStartTime(getContext()));
+        timerMeasurment = viewModel.getMeasurementTimer(SharedPreferenceUtils.getMeasurmentTime(getContext()));
         spinnerListDevices = presenter.getListDevices();
         setSpinners();
         setHasOptionsMenu(true);
@@ -112,6 +123,48 @@ public /*abstract*/ class MeterFragment<V extends MeterContractor.View, P extend
             presenter.startIzmOnClick();
         //return inflater.inflate(R.layout.fragment_meter, container, false);
         return view;
+    }
+
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        viewModel.getTimerStartData().observe(getViewLifecycleOwner(), new Observer<Long>() {
+            @Override
+            public void onChanged(Long s) {
+                if(viewModel.timerStartIsFinish){
+                    binding.layoutTimerStart.setVisibility(View.GONE);
+                    if(viewModel.isClickStart) {
+                        try {
+                            presenter.startIzmOnClick();
+                        } catch (Exception e) {
+                            showToast(e.getMessage());
+                        }
+                        if (SharedPreferenceUtils.getIsAutoMeasurment(getContext()) && viewModel.timerMeasurmentIsFinish) {
+                            binding.layoutTimerMeasurements.setVisibility(View.VISIBLE);
+                            //
+                            timerMeasurment.start();
+
+                        }
+                    }
+                    viewModel.isClickStart=false;
+                } else{
+                    binding.layoutTimerStart.setVisibility(View.VISIBLE);
+                    binding.tvTimerStart.setText(s+" c.");
+                }
+            }
+        });
+        viewModel.getTimerMeasurementData().observe(getViewLifecycleOwner(), new Observer<Long>() {
+            @Override
+            public void onChanged(Long s) {
+                if(viewModel.timerMeasurmentIsFinish){
+                    binding.layoutTimerMeasurements.setVisibility(View.INVISIBLE);
+                    //presenter.finishIzmOnClick();
+                } else{
+                    binding.layoutTimerMeasurements.setVisibility(View.VISIBLE);
+                    binding.tvTimerMeasurements.setText(s+" c.");
+                }
+            }
+        });
     }
 
     @Override
@@ -155,6 +208,13 @@ public /*abstract*/ class MeterFragment<V extends MeterContractor.View, P extend
     }*/
 
     @Override
+    public void onStart() {
+        presenter.attachView((V) this);
+        super.onStart();
+
+    }
+
+    @Override
     public void onStop() {
         super.onStop();
         presenter.detachLifecycle(getLifecycle());
@@ -183,13 +243,13 @@ public /*abstract*/ class MeterFragment<V extends MeterContractor.View, P extend
         binding.btnStartIzm.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                presenter.startIzmOnClick();
+                startIzmOnClick();
             }
         });
         binding.btnFinishIzm.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                presenter.finishIzmOnClick();
+                finishIzmOnClick();
             }
         });
         binding.btnSingleIzm.setOnClickListener(new View.OnClickListener() {
@@ -224,6 +284,32 @@ public /*abstract*/ class MeterFragment<V extends MeterContractor.View, P extend
         filter = new IntentFilter(ACTION_USB_PERMISSION);
         getActivity().getApplicationContext().registerReceiver(mUsbPlugEvents, filter);*/
         //registerReceiver(mUsbReceiver, filter);
+    }
+
+    private void startIzmOnClick() {
+        //if(presenter.deviceIsOpened()) {
+        viewModel.isClickStart = true;
+        if (SharedPreferenceUtils.getIsDelayedStart(getContext())) {
+            binding.layoutTimerStart.setVisibility(View.VISIBLE);
+            timerStart.start();
+        } else {
+            //presenter.startIzmOnClick();
+            if (SharedPreferenceUtils.getIsAutoMeasurment(getContext()) && viewModel.timerMeasurmentIsFinish) {
+                binding.layoutTimerMeasurements.setVisibility(View.VISIBLE);
+                timerMeasurment.start();
+                viewModel.isClickStart=false;
+            }
+
+        }
+
+        //} else showToast(getString(R.string.msg_device_not_open));
+    }
+
+    private void finishIzmOnClick(){
+        if (SharedPreferenceUtils.getIsAutoMeasurment(getContext())) {
+            timerMeasurment.cancel();
+            timerMeasurment.onFinish();
+        } else presenter.finishIzmOnClick();
     }
 
     private void setSpinners() {
@@ -297,13 +383,13 @@ public /*abstract*/ class MeterFragment<V extends MeterContractor.View, P extend
 
     @Override
     public void izmIsStart(boolean isStart) {
+        isIzmStart = isStart;
         if (isStart) {
             binding.btnStartIzm.setVisibility(View.GONE);
             binding.btnFinishIzm.setVisibility(View.VISIBLE);
         } else {
             binding.btnStartIzm.setVisibility(View.VISIBLE);
             binding.btnFinishIzm.setVisibility(View.GONE);
-
         }
     }
 

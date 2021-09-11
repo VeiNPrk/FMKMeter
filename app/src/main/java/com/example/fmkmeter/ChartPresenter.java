@@ -1,31 +1,24 @@
 package com.example.fmkmeter;
 
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AlertDialog;
-import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.DialogFragment;
 import androidx.lifecycle.Lifecycle;
 import androidx.lifecycle.LifecycleObserver;
 import androidx.lifecycle.LifecycleOwner;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.OnLifecycleEvent;
-import androidx.navigation.Navigation;
 import androidx.preference.PreferenceManager;
 
 import android.Manifest;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 
-import com.ftdi.j2xx.FT_Device;
-import com.github.mikephil.charting.charts.LineChart;
-import com.github.mikephil.charting.data.Entry;
+import com.example.fmkmeter.utils.FileUtils;
 import com.github.mikephil.charting.data.LineData;
-import com.github.mikephil.charting.data.ScatterData;
 
 import java.util.ArrayList;
 import java.util.List;

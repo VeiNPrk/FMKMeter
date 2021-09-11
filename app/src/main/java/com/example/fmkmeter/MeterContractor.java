@@ -31,7 +31,7 @@ public interface MeterContractor {
 
         void setContext(Context context);
 
-        void setRepository(Repository repository, LifecycleOwner lifecycleOwner);
+        void setLifecycleOwner(/*Repository repository, */LifecycleOwner lifecycleOwner);
 
         void attachLifecycle(Lifecycle lifecycle);
 
@@ -42,6 +42,8 @@ public interface MeterContractor {
         void detachView();
 
         V getView();
+
+        boolean deviceIsOpened();
 
         boolean isViewAttached();
 

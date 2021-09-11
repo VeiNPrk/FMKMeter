@@ -1,4 +1,4 @@
-package com.example.fmkmeter;
+package com.example.fmkmeter.utils;
 
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -7,6 +7,9 @@ import android.util.Log;
 import android.util.Xml;
 
 import androidx.preference.PreferenceManager;
+
+import com.example.fmkmeter.R;
+import com.example.fmkmeter.Signal;
 
 import org.xmlpull.v1.XmlSerializer;
 
