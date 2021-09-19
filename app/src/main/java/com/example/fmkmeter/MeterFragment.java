@@ -39,6 +39,7 @@ import android.widget.ArrayAdapter;
 import android.widget.Toast;
 
 import com.example.fmkmeter.databinding.FragmentMeterBinding;
+import com.example.fmkmeter.utils.FileUtils;
 import com.example.fmkmeter.utils.SharedPreferenceUtils;
 
 import java.util.ArrayList;
@@ -54,7 +55,10 @@ import java.util.List;
  * create an instance of this fragment.
  */
 public /*abstract*/ class MeterFragment<V extends MeterContractor.View, P extends MeterContractor.Presenter<V>> extends Fragment
-        implements MeterContractor.View {
+        implements MeterContractor.View,
+        CalculateAsyncTask.CalculateAsyncTaskListener,
+        CalculateAsyncTaskNew.CalculateAsyncTaskNewListener,
+        SaveFileDialogFragment.SaveFileDialogListener{
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     public static final String TAG = "MeterFragment";
@@ -79,8 +83,6 @@ public /*abstract*/ class MeterFragment<V extends MeterContractor.View, P extend
     public static MeterFragment newInstance(/*String param1, String param2*/) {
         MeterFragment fragment = new MeterFragment();
         Bundle args = new Bundle();
-        /*args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);*/
         fragment.setArguments(args);
         return fragment;
     }
@@ -92,8 +94,6 @@ public /*abstract*/ class MeterFragment<V extends MeterContractor.View, P extend
         if (getArguments() != null) {
             izm = getArguments().getInt("isStartIzm");
             Log.d("onCreate", "" + izm);
-            /*mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);*/
         }
     }
 
@@ -289,23 +289,32 @@ public /*abstract*/ class MeterFragment<V extends MeterContractor.View, P extend
     private void startIzmOnClick() {
         //if(presenter.deviceIsOpened()) {
         viewModel.isClickStart = true;
-        if (SharedPreferenceUtils.getIsDelayedStart(getContext())) {
-            binding.layoutTimerStart.setVisibility(View.VISIBLE);
-            timerStart.start();
-        } else {
-            //presenter.startIzmOnClick();
-            if (SharedPreferenceUtils.getIsAutoMeasurment(getContext()) && viewModel.timerMeasurmentIsFinish) {
-                binding.layoutTimerMeasurements.setVisibility(View.VISIBLE);
-                timerMeasurment.start();
-                viewModel.isClickStart=false;
+        viewModel.isAutoBegin = true;
+        //while(viewModel.isAutoBegin){
+            viewModel.isAutoBegin = SharedPreferenceUtils.getIsAutoMeasurment(getContext());
+            if(viewModel.isAutoBegin && !viewModel.isAutoSaveDialogShown){
+                SaveFileDialogFragment.newInstance(this, true).show(getParentFragmentManager(), TAG);
+                viewModel.isAutoSaveDialogShown = true;
+            } else {
+                if (SharedPreferenceUtils.getIsDelayedStart(getContext())) {
+                    binding.layoutTimerStart.setVisibility(View.VISIBLE);
+                    timerStart.start();
+                } else {
+                    //presenter.startIzmOnClick();
+                    if (SharedPreferenceUtils.getIsAutoMeasurment(getContext()) && viewModel.timerMeasurmentIsFinish) {
+                        binding.layoutTimerMeasurements.setVisibility(View.VISIBLE);
+                        timerMeasurment.start();
+                        viewModel.isClickStart = false;
+                    }
+                }
             }
-
-        }
-
+        //}
         //} else showToast(getString(R.string.msg_device_not_open));
     }
 
     private void finishIzmOnClick(){
+        viewModel.isAutoBegin = false;
+        viewModel.isAutoSaveDialogShown = false;
         if (SharedPreferenceUtils.getIsAutoMeasurment(getContext())) {
             timerMeasurment.cancel();
             timerMeasurment.onFinish();
@@ -378,7 +387,9 @@ public /*abstract*/ class MeterFragment<V extends MeterContractor.View, P extend
 
     @Override
     public void goToResult() {
-        Navigation.findNavController(binding.btnResult).navigate(R.id.action_meterFragment_to_chartFragment);
+        if(viewModel.isAutoBegin){
+            presenter.startCalculate(this, this);
+        } else Navigation.findNavController(binding.btnResult).navigate(R.id.action_meterFragment_to_chartFragment);
     }
 
     @Override
@@ -468,6 +479,32 @@ public /*abstract*/ class MeterFragment<V extends MeterContractor.View, P extend
             }
         }
     };
+
+    @Override
+    public void onPostCalculateConcluded(List<Signal> outData, List<Signal> outIntegrateFirstData, List<Signal> outIntegrateSecondData, float minMaxValue, float minMaxIntegrateValue, float min, float max, float average) {
+        if (outData != null && outData.size() > 0) {
+            String fileName = viewModel.getAutoSaveFileName();
+            showToast(FileUtils.saveFile(outData, outIntegrateFirstData, outIntegrateSecondData, getContext(), fileName));
+        } else showToast(getString(R.string.msg_data_not_found));
+        if(viewModel.isAutoBegin)
+            startIzmOnClick();
+    }
+
+    @Override
+    public void onPostCalculateNewConcluded(List<Signal> outData, List<Signal> outIntegrateFirstData, List<Signal> outIntegrateSecondData, float minMaxValue, float minMaxIntegrateValue, int[] indexesMinMax) {
+        if (outData != null && outData.size() > 0) {
+            String fileName = viewModel.getAutoSaveFileName();
+            showToast(FileUtils.saveFile(outData, outIntegrateFirstData, outIntegrateSecondData, getContext(), fileName));
+        } else showToast(getString(R.string.msg_data_not_found));
+        if(viewModel.isAutoBegin)
+            startIzmOnClick();
+    }
+
+    @Override
+    public void onSaveDialogPositiveClick(String uchastok, String put, String nOpora, String nIzm) {
+        viewModel.setAutoSaveParam(uchastok, put, nOpora);
+        startIzmOnClick();
+    }
 /*
     @Override
     public void onAttach(Context context) {

@@ -8,6 +8,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TableRow;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -23,8 +24,10 @@ public class SaveFileDialogFragment extends DialogFragment {
     private EditText etNOpora;
     private EditText etNIzm;
     private TextView tvError;
+    private TableRow tblRowNIzm;
     private static String saveUchastok="";
     private static String saveNIzm="";
+    private static boolean isAutoSave = false;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -49,6 +52,14 @@ public class SaveFileDialogFragment extends DialogFragment {
         return infoDialog;
     }
 
+    public static SaveFileDialogFragment newInstance(SaveFileDialogListener _mListener, boolean _isAutoSave) {
+        SaveFileDialogFragment infoDialog = new SaveFileDialogFragment();
+        isAutoSave = _isAutoSave;
+        saveNIzm="1";
+        mListener=_mListener;
+        return infoDialog;
+    }
+
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         LayoutInflater inflater = getActivity().getLayoutInflater();
         View view = inflater.inflate(R.layout.maket_save_dialog, null);
@@ -58,7 +69,13 @@ public class SaveFileDialogFragment extends DialogFragment {
         etNIzm = view.findViewById(R.id.et_nizm);
         tvError = view.findViewById(R.id.tv_dlg_error);
         etUchastok.setText(saveUchastok);
-        etNIzm.setText(saveNIzm);
+        tblRowNIzm = view.findViewById(R.id.tbl_row_nizm);
+        if(isAutoSave)
+            tblRowNIzm.setVisibility(View.GONE);
+        else {
+            tblRowNIzm.setVisibility(View.VISIBLE);
+            etNIzm.setText(saveNIzm);
+        }
         /*if(savedInstanceState!=null){
             saveUchastok = savedInstanceState.getString(KEY_UCHASTOK_FIELD);
             saveNIzm = savedInstanceState.getString(KEY_NIZM_FIELD);
@@ -80,14 +97,8 @@ public class SaveFileDialogFragment extends DialogFragment {
 
                     }
                 }*/);
-
-        /*Button button = adb.show().getButton(AlertDialog.BUTTON_POSITIVE);
-        button.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-
-            }
-        });*/
+        if(isAutoSave)
+            adb.setMessage(R.string.dlg_autosave_message);
         return adb.create();
     }
 
@@ -104,7 +115,9 @@ public class SaveFileDialogFragment extends DialogFragment {
                     saveUchastok = etUchastok.getText().toString();
                     String put = etPut.getText().toString();
                     String nOpora = etNOpora.getText().toString();
-                    saveNIzm = etNIzm.getText().toString();
+                    if(!isAutoSave)
+                        saveNIzm = etNIzm.getText().toString();
+
                     if(saveUchastok.equals("") || saveNIzm.equals("")) {
                         tvError.setVisibility(View.VISIBLE);
                     }

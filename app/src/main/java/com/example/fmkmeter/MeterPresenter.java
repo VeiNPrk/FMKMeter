@@ -13,6 +13,7 @@ import android.os.Bundle;
 import android.util.Log;
 
 import com.example.fmkmeter.utils.D2DeviceUtils;
+import com.example.fmkmeter.utils.SharedPreferenceUtils;
 import com.ftdi.j2xx.FT_Device;
 
 import java.util.List;
@@ -24,12 +25,12 @@ public class MeterPresenter<V extends MeterContractor.View> implements Lifecycle
     private Context context;
     private D2DeviceUtils deviceUtils;
     ReaderAsyncTask readerAsyncTask;
-    boolean isSingle = false;
-    boolean isIzmStart = false;
-    boolean isAutoStart = false;
-    boolean isInsertDone = false;
-    boolean isInsertStart = false;
-    Repository repository;
+    private boolean isSingle = false;
+    private boolean isIzmStart = false;
+    private boolean isAutoStart = false;
+    private boolean isInsertDone = false;
+    private boolean isInsertStart = false;
+    private Repository repository;
     LifecycleOwner ow1;
 
     public MeterPresenter(Context context, Repository repository){
@@ -179,6 +180,7 @@ public class MeterPresenter<V extends MeterContractor.View> implements Lifecycle
     @Override
     public void startIzmOnClick() {
         Log.d(TAG, "startIzmOnClick");
+        //Для отладки
         /*if (!deviceUtils.isOpened()) {
             view.showToast(context.getString(R.string.msg_device_not_open));
             return;
@@ -206,16 +208,36 @@ public class MeterPresenter<V extends MeterContractor.View> implements Lifecycle
             StopThreadRead();
             isIzmStart = false;
             view.izmIsStart(isIzmStart);
-            if (!deviceUtils.isOpened()) {
+            /*if (!deviceUtils.isOpened()) {
                 view.showToast(context.getString(R.string.msg_device_not_open));
                 return;
-            }
+            }*/
             deviceUtils.finishIzm();
             isInsertStart = true;
             view.showProgressBar(true);
             //repository.saveDataToDb();
         } catch (Exception ex) {
             //binding.tvRead.setText(ex.toString());
+        }
+    }
+
+    @Override
+    public void startCalculate(CalculateAsyncTask.CalculateAsyncTaskListener calculateAsyncTaskListener, CalculateAsyncTaskNew.CalculateAsyncTaskNewListener calculateAsyncTaskNewListener) {
+        boolean tfIntegr = SharedPreferenceUtils.getIsIntegrate(context);
+        int cntNLast = 2000;
+        try {
+            cntNLast = SharedPreferenceUtils.getCntNLast(context);
+        } catch (NumberFormatException nfe) {
+            cntNLast = 2000;
+        }
+        if(tfIntegr && SharedPreferenceUtils.getIsUseNewIntegrate(context)) {
+            CalculateAsyncTaskNew calculateAsyncTaskNew = new CalculateAsyncTaskNew(calculateAsyncTaskNewListener, cntNLast, tfIntegr);
+            calculateAsyncTaskNew.setData(repository.getEndData().getValue());
+            calculateAsyncTaskNew.execute(0);
+        } else{
+            CalculateAsyncTask calculateAsyncTask = new CalculateAsyncTask(calculateAsyncTaskListener, cntNLast, tfIntegr);
+            calculateAsyncTask.setData(repository.getEndData().getValue());
+            calculateAsyncTask.execute(0);
         }
     }
 
@@ -282,6 +304,7 @@ public class MeterPresenter<V extends MeterContractor.View> implements Lifecycle
         } catch (Exception ex) {
             int i = 0;
         }
+
         view.goToResult();
         /*this.repository.getEndData().observe(ow1, new Observer<List<Signal>>() {
             @Override

@@ -20,6 +20,13 @@ public final class MeterViewModel extends AndroidViewModel {
     public boolean timerStartIsFinish = true;
     public boolean timerMeasurmentIsFinish = true;
     public boolean isClickStart = false;
+    public boolean isAutoSaveDialogShown = false;
+    public boolean isAutoBegin = true;
+    private String saveUch = "";
+    private String savePut = "";
+    private String saveNumOpora = "";
+    private int saveNumIzm = 1;
+    private String autoSaveFileName = "";
 
     public MeterViewModel(@NonNull Application application) {
         super(application);
@@ -78,6 +85,19 @@ public final class MeterViewModel extends AndroidViewModel {
                 Log.d("TIMER","done!");
             }
         };
+    }
+
+    public void setAutoSaveParam(String _saveUch, String _savePut, String _saveNumOpora){
+        saveUch = _saveUch;
+        savePut = _savePut;
+        saveNumOpora = _saveNumOpora;
+        saveNumIzm = 1;
+    }
+
+    public String getAutoSaveFileName(){
+        String fileName = saveUch + "_" + savePut + "_" + saveNumOpora + "_" + saveNumIzm + ".txt";
+        saveNumIzm++;
+        return fileName;
     }
  
      @Override

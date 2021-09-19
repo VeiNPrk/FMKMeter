@@ -75,6 +75,7 @@
         </TableRow>
 
         <TableRow
+            android:id="@+id/tbl_row_nizm"
             android:layout_width="match_parent"
             android:layout_height="match_parent">
 

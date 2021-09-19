@@ -18,6 +18,7 @@ import android.os.Bundle;
 import android.util.Log;
 
 import com.example.fmkmeter.utils.FileUtils;
+import com.example.fmkmeter.utils.SharedPreferenceUtils;
 import com.github.mikephil.charting.data.LineData;
 
 import java.util.ArrayList;
@@ -53,10 +54,6 @@ public class ChartPresenter<V extends ChartContractor.View> implements Lifecycle
     private boolean isFirstTime = true;
     private int cntNLast = 2000;
     private boolean tfIntegr = false;
-    private static final String KEY_CNT_N_LAST="cnt_n_last";
-    private static final String KEY_TF_INTEGR="tf_integr";
-    private static final String KEY_TF_VISIBLE_FIRST_INTEGR="tf_visible_first_integr";
-    private static final String KEY_TF_USE_NEW_INTEGR="tf_use_new_integr";
     Repository repository;
     LineChartClass lineChart = null;
     LifecycleOwner lifecycleOw;
@@ -308,16 +305,15 @@ public class ChartPresenter<V extends ChartContractor.View> implements Lifecycle
             view.setTVIndexChart(indexStepChart, indexLastStepChart);
         } else {
             isLoadResultClicked = true;
-            SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
-            tfIntegr = sharedPreferences.getBoolean(KEY_TF_INTEGR, false);
-            lineChart.setVisibleFirstIntegrate(tfIntegr && sharedPreferences.getBoolean(KEY_TF_VISIBLE_FIRST_INTEGR, false));
+            tfIntegr = SharedPreferenceUtils.getIsIntegrate(context);
+            lineChart.setVisibleFirstIntegrate(tfIntegr && SharedPreferenceUtils.getIsVisibleFirstIntegrate(context));
             try {
-                cntNLast = Integer.parseInt(sharedPreferences.getString(KEY_CNT_N_LAST, "2000"));
+                cntNLast = SharedPreferenceUtils.getCntNLast(context);
             } catch (NumberFormatException nfe) {
                 cntNLast = 2000;
             }
 
-            if(tfIntegr && sharedPreferences.getBoolean(KEY_TF_USE_NEW_INTEGR, false)) {
+            if(tfIntegr && SharedPreferenceUtils.getIsUseNewIntegrate(context)) {
                 calculateAsyncTaskNew = new CalculateAsyncTaskNew(this, cntNLast, tfIntegr);
                 calculateAsyncTaskNew.setData(repository.getEndData().getValue());
                 calculateAsyncTaskNew.execute(delta);
@@ -379,9 +375,8 @@ public class ChartPresenter<V extends ChartContractor.View> implements Lifecycle
     }
 
     private String[] getFormatMinMax(List<Signal> outData, List<Signal> outFirstIntegrateData, List<Signal> outSecondIntegrateData, int[] indexesMinMax, float minMax, float minMaxSecondIntegrate){
-        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
         String[] minMaxStr = {"", ""};
-        if(sharedPreferences.getBoolean(KEY_TF_INTEGR, false) && sharedPreferences.getBoolean(KEY_TF_USE_NEW_INTEGR, false)) {
+        if(SharedPreferenceUtils.getIsIntegrate(context) && SharedPreferenceUtils.getIsUseNewIntegrate(context)) {
             if(indexesMinMax!=null) {
                 String str = "t1="+outData.get(indexesMinMax[0]).getTime()+", A1="+outData.get(indexesMinMax[0]).getValue()+"; ";
                 if (outFirstIntegrateData.size() > 0)

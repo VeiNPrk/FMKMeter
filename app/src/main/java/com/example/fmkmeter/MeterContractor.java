@@ -63,6 +63,8 @@ public interface MeterContractor {
 
         void finishIzmOnClick();
 
+        void startCalculate(CalculateAsyncTask.CalculateAsyncTaskListener calculateAsyncTaskListener, CalculateAsyncTaskNew.CalculateAsyncTaskNewListener calculateAsyncTaskNewListener);
+
         void startIzmOnClickTest();
 
         void finishIzmOnClickTest();

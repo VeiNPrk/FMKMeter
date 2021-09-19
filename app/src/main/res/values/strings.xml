@@ -72,6 +72,7 @@
     <string name="dlg_save_tv_hint_put">Введите путь</string>
     <string name="dlg_save_tv_hint_nopor">Введите № опоры</string>
     <string name="dlg_save_tv_hint_nizm">Введите № измерения</string>
+    <string name="dlg_autosave_message">Т.к. у Вас выбрана опция автоматического измерения, необходимо ввести параметры для автоматического сохранения файлов.</string>
     <string name="pref_use_new_inegr">Использовать последний метод интегрирования</string>
     <string name="pref_time_dimension">Длительность измерения</string>
     <string name="pref_visible_first_integr">Отображать первое интегрирование</string>
