@@ -147,7 +147,9 @@ public class MeterPresenter<V extends MeterContractor.View> implements Lifecycle
     @Override
     public void spnDevicesItemOnClick(int position) {
         try {
-            view.showToast(deviceUtils.connectDevice(position));
+            if (!deviceUtils.isOpened()) {
+                view.showToast(deviceUtils.connectDevice(position));
+            }
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
@@ -181,10 +183,10 @@ public class MeterPresenter<V extends MeterContractor.View> implements Lifecycle
     public void startIzmOnClick() {
         Log.d(TAG, "startIzmOnClick");
         //Для отладки
-        /*if (!deviceUtils.isOpened()) {
+        if (!deviceUtils.isOpened()) {
             view.showToast(context.getString(R.string.msg_device_not_open));
             return;
-        }*/
+        }
         //Log.d(TAG, "StartIzm");
         StopThreadRead();
 
@@ -202,16 +204,17 @@ public class MeterPresenter<V extends MeterContractor.View> implements Lifecycle
     }
 
     @Override
-    public void finishIzmOnClick() {
+    public void finishIzmOnClick(boolean isAutoFinish) {
         Log.d(TAG, "FinishIzm");
         try {
             StopThreadRead();
             isIzmStart = false;
-            view.izmIsStart(isIzmStart);
-            /*if (!deviceUtils.isOpened()) {
+            if(!isAutoFinish)
+                view.izmIsStart(isIzmStart);
+            if (!deviceUtils.isOpened()) {
                 view.showToast(context.getString(R.string.msg_device_not_open));
                 return;
-            }*/
+            }
             deviceUtils.finishIzm();
             isInsertStart = true;
             view.showProgressBar(true);

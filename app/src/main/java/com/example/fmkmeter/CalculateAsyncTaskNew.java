@@ -95,7 +95,7 @@ public class CalculateAsyncTaskNew extends AsyncTask<Integer, Void, Void> {
     private void findIndexesMinMax(List<Signal> data, List<Signal> firstIntegrateData){
         float porog = -50;
         int indexPorog = 0;
-        while(indexPorog<data.size() && data.get(indexPorog).getValue() > porog)
+        while(indexPorog<data.size()-1 && data.get(indexPorog).getValue() > porog)
             indexPorog++;
 
         int index = indexPorog;

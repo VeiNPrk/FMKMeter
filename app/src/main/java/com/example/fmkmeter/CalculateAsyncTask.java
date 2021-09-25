@@ -155,7 +155,7 @@ public class CalculateAsyncTask extends AsyncTask<Integer, Void, Void> {
             if (startIndex < 0)
                 startIndex = 0;
             if (finalIndex > data.size())
-                finalIndex = data.size();
+                finalIndex = data.size()-1;
 
             if (lastFindIndex < 0 || lastFindIndex > data.size())
                 lastFindIndex = finalIndex;

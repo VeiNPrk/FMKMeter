@@ -134,6 +134,7 @@ public /*abstract*/ class MeterFragment<V extends MeterContractor.View, P extend
                 if(viewModel.timerStartIsFinish){
                     binding.layoutTimerStart.setVisibility(View.GONE);
                     if(viewModel.isClickStart) {
+                        viewModel.isClickStart=false;
                         try {
                             presenter.startIzmOnClick();
                         } catch (Exception e) {
@@ -141,9 +142,7 @@ public /*abstract*/ class MeterFragment<V extends MeterContractor.View, P extend
                         }
                         if (SharedPreferenceUtils.getIsAutoMeasurment(getContext()) && viewModel.timerMeasurmentIsFinish) {
                             binding.layoutTimerMeasurements.setVisibility(View.VISIBLE);
-                            //
                             timerMeasurment.start();
-
                         }
                     }
                     viewModel.isClickStart=false;
@@ -158,7 +157,8 @@ public /*abstract*/ class MeterFragment<V extends MeterContractor.View, P extend
             public void onChanged(Long s) {
                 if(viewModel.timerMeasurmentIsFinish){
                     binding.layoutTimerMeasurements.setVisibility(View.INVISIBLE);
-                    //presenter.finishIzmOnClick();
+                    if(isIzmStart)
+                        presenter.finishIzmOnClick(true);
                 } else{
                     binding.layoutTimerMeasurements.setVisibility(View.VISIBLE);
                     binding.tvTimerMeasurements.setText(s+" c.");
@@ -287,7 +287,7 @@ public /*abstract*/ class MeterFragment<V extends MeterContractor.View, P extend
     }
 
     private void startIzmOnClick() {
-        //if(presenter.deviceIsOpened()) {
+        if(presenter.deviceIsOpened()) {
         viewModel.isClickStart = true;
         viewModel.isAutoBegin = true;
         //while(viewModel.isAutoBegin){
@@ -299,8 +299,9 @@ public /*abstract*/ class MeterFragment<V extends MeterContractor.View, P extend
                 if (SharedPreferenceUtils.getIsDelayedStart(getContext())) {
                     binding.layoutTimerStart.setVisibility(View.VISIBLE);
                     timerStart.start();
+                    izmIsStart(true);
                 } else {
-                    //presenter.startIzmOnClick();
+                    presenter.startIzmOnClick();
                     if (SharedPreferenceUtils.getIsAutoMeasurment(getContext()) && viewModel.timerMeasurmentIsFinish) {
                         binding.layoutTimerMeasurements.setVisibility(View.VISIBLE);
                         timerMeasurment.start();
@@ -309,16 +310,25 @@ public /*abstract*/ class MeterFragment<V extends MeterContractor.View, P extend
                 }
             }
         //}
-        //} else showToast(getString(R.string.msg_device_not_open));
+        } else showToast(getString(R.string.msg_device_not_open));
     }
 
     private void finishIzmOnClick(){
         viewModel.isAutoBegin = false;
         viewModel.isAutoSaveDialogShown = false;
+        viewModel.isClickStart = false;
+        if(SharedPreferenceUtils.getIsDelayedStart(getContext())){
+            if(!viewModel.timerStartIsFinish) {
+                timerStart.cancel();
+                timerStart.onFinish();
+                izmIsStart(false);
+                return;
+            }
+        }
         if (SharedPreferenceUtils.getIsAutoMeasurment(getContext())) {
             timerMeasurment.cancel();
             timerMeasurment.onFinish();
-        } else presenter.finishIzmOnClick();
+        } else presenter.finishIzmOnClick(false);
     }
 
     private void setSpinners() {
@@ -330,9 +340,7 @@ public /*abstract*/ class MeterFragment<V extends MeterContractor.View, P extend
         binding.spnDevices.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                //Log.v("onItemSelected", view.toString());
                 presenter.spnDevicesItemOnClick(position);
-                //ConnectDevice(position);
             }
 
             @Override
@@ -505,23 +513,6 @@ public /*abstract*/ class MeterFragment<V extends MeterContractor.View, P extend
         viewModel.setAutoSaveParam(uchastok, put, nOpora);
         startIzmOnClick();
     }
-/*
-    @Override
-    public void onAttach(Context context) {
-        super.onAttach(context);
-        if (context instanceof OnFragmentInteractionListener) {
-            mListener = (OnFragmentInteractionListener) context;
-        } else {
-            throw new RuntimeException(context.toString()
-                    + " must implement OnFragmentInteractionListener");
-        }
-    }
-
-    @Override
-    public void onDetach() {
-        super.onDetach();
-        mListener = null;
-    }*/
 
     /**
      * This interface must be implemented by activities that contain this
